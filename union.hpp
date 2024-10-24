@@ -29,7 +29,7 @@
 #endif
 
 #ifndef FCF_UNION_TEMPLATE_EXTERN
-  #ifdef WIN32
+  #ifdef _MSC_VER
     #define FCF_UNION_TEMPLATE_EXTERN
   #else
     #ifdef FCF_UNION_IMPLEMENTATION

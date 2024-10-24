@@ -27,6 +27,7 @@ target_link_libraries("${PROJECT_NAME}-stest" PRIVATE  "${PROJECT_NAME}-shared")
 target_compile_definitions("${PROJECT_NAME}-stest" PRIVATE  FCF_UNION_SHARED=1)
 
 add_executable("${PROJECT_NAME}-test" ${TEST_CPP} main.cpp)
+  #target_link_options("${PROJECT_NAME}-test" PUBLIC "-s")
 
 add_executable("${PROJECT_NAME}-exemple001" example001.cpp)
 
