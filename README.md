@@ -166,8 +166,8 @@ int main(int a_argc, char* a_argv[]){
   
   // Result
   // StdOut: The file contains a JSON object: 1
-  // StdOut: Fields:
-  // StdOut:   [param1]: some value
+  // StdOut:   Fields:
+  // StdOut:     [param1]: some value
   std::cout << "The file contains a JSON object: " << u.is<fcf::UnionMap>() << std::endl;
   std::cout << "  Fields: " << std::endl;
   std::cout << "    [param1]: " << u["param1"] << std::endl;
