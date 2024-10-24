@@ -84,7 +84,7 @@ int main(int a_argc, const char* a_argv[]){
   std::cout << "JSON for map value: \n" << ss.str() << std::endl;
 
   //----------------------------
-  // JSON parsing example
+  // JSON/JSObject parsing example
   //----------------------------
   std::stringstream ssource(
       "{\n"
