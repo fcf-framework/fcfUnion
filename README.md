@@ -136,7 +136,7 @@ int main(int a_argc, const char* a_argv[]){
 <a name="including_headers_executable"></a>
 ### Including headers in an executable
 
-As mentioned earlier, to include union.hpp it is necessary to declare the implementation. It is best to use a separate file for this, for example unionImpl.cpp. This will allow you to avoid recompiling union.hpp when editing the project. This approach is given as an example below:
+As mentioned earlier, to include union.hpp it is necessary to declare the implementation (Include the union.hpp file with the declared `FCF_UNION_IMPLEMENTATION` macro). It is best to use a separate file for this, for example unionImpl.cpp. This will allow you to avoid recompiling union.hpp when editing the project. This approach is given as an example below:
 
 **unionImpl.cpp file:**
 ```c++
