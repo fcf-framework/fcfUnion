@@ -117,7 +117,7 @@ int main(int a_argc, const char* a_argv[]){
   std::cout << std::endl;
   std::cout << "  First value from object 'key3': " << uJson["key3"][0] << std::endl;
   std::cout << "  The 'key3' object contains " << uJson["key3"].size() << " values:" << std::endl;
-  for(fcf::Union::iterator it = uJson["key3"].obegin(); it != uJson["key3"].oend(); ++it) {
+  for(fcf::Union::iterator it = uJson["key3"].begin(); it != uJson["key3"].end(); ++it) {
     std::cout << "        [" << it.key() << "]: " << it.value() << std::endl;
   }
   return 0;
