@@ -47,7 +47,9 @@ int main(int a_argc, const char* a_argv[]){
   // Result
   // StdOut: Union value: 3.140000; doubel value: 3.14; int value: 3; std::string: 3.140000
   // 
-  std::cout << "Union value: "  << uDoubleValue << "; doubel value: " << dDoubleValue << "; int value: " << iDoubleValue << "; std::string: " << sDoubleValue << std::endl;
+  std::cout << "Union value: "  << uDoubleValue << "; doubel value: "
+            << dDoubleValue << "; int value: "
+            << iDoubleValue << "; std::string: " << sDoubleValue << std::endl;
 
   //----------------------------
   // Example of JSON output
