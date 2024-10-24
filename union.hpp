@@ -3555,10 +3555,10 @@ namespace fcf {
       };
       CallData cd{a_union.value, value};
       Details::NUnion::Selector::select<void, Details::NUnion::EI_COPY, TNOP>(a_union.type, cd);
-      if (a_union.order) {
+      if (!order) {
         order = a_union.order;
       }
-      if (a_union.orderc) {
+      if (orderc < a_union.orderc) {
         orderc = a_union.orderc;
       }
       type = a_union.type;
