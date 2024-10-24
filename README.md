@@ -27,7 +27,7 @@ An fcf::Union object can store one of the following types:
 
 The library is distributed in the form of header files and to start using it, you need to declare the implementation in one cpp file. This is done by including the union.hpp file with the declared `FCF_UNION_IMPLEMENTATION` macro, in other files with the included union.hpp, the `FCF_UNION_IMPLEMENTATION` macro is not needed
 
-```
+```c++
 #define FCF_UNION_IMPLEMENTATION
 
 #include <union/union.hpp>
