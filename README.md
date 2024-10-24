@@ -13,17 +13,17 @@
 The class provides a simple interface for combining several basic types into a single union.
 
 An fcf::Union object can store one of the following types:
-- `fcf::Undefined (Numerical equivalent: UT_UNDEFINED),`c++
-- `fcf::Null (Numerical equivalent: UT_NULL),`c++
-- `int (Numerical equivalent: UT_INT),`c++
-- `unsigned int (Numerical equivalent: UT_UINT),`c++
-- `long long (Numerical equivalent: UT_LONGLONG),`c++
-- `unsigned long long (Numerical equivalent: UT_ULONGLONG),`c++
-- `double (Numerical equivalent: UT_DOUBLE),`c++
-- `bool (Numerical equivalent: UT_BOOL),`c++
-- `std::string (Numerical equivalent: UT_STRING),`c++
-- `fcf::UnionVector /*std::vector<fcf::Union>*/ (Numerical equivalent: UT_VECTOR),`c++
-- `fcf::UnionMap /*std::map<fcf::Union, fcf::Union, fcf::MapLess>*/ (Numerical equivalent: UT_MAP),`c++
+- `fcf::Undefined (Numerical equivalent: UT_UNDEFINED),`
+- `fcf::Null (Numerical equivalent: UT_NULL),`
+- `int (Numerical equivalent: UT_INT),`
+- `unsigned int (Numerical equivalent: UT_UINT),`
+- `long long (Numerical equivalent: UT_LONGLONG),`
+- `unsigned long long (Numerical equivalent: UT_ULONGLONG),`
+- `double (Numerical equivalent: UT_DOUBLE),`
+- `bool (Numerical equivalent: UT_BOOL),`
+- `std::string (Numerical equivalent: UT_STRING),`
+- `fcf::UnionVector /*std::vector<fcf::Union>*/ (Numerical equivalent: UT_VECTOR),`
+- `fcf::UnionMap /*std::map<fcf::Union, fcf::Union, fcf::MapLess>*/ (Numerical equivalent: UT_MAP),`
 
 The library is distributed in the form of header files and to start using it, you need to declare the implementation in one cpp file. This is done by including the union.hpp file with the declared `FCF_UNION_IMPLEMENTATION` macro, in other files with the included union.hpp, the `FCF_UNION_IMPLEMENTATION` macro is not needed
 
