@@ -179,8 +179,7 @@ int main(int a_argc, char* a_argv[]){
 **CMakeLists.txt file**
 ```
 cmake_minimum_required(VERSION 3.0)
-set(PROJECT_NAME example002)
-project(${PROJECT_NAME})
+project(example002)
 include_directories(SYSTEM ${CMAKE_SOURCE_DIR}/../../../)
 add_executable(exemple002 unionImpl.cpp main.cpp)
 ```
