@@ -31,5 +31,4 @@ add_executable("${PROJECT_NAME}-test" ${TEST_CPP} main.cpp)
 
 add_executable("${PROJECT_NAME}-exemple001" example001.cpp)
 
-
-
+add_subdirectory(example002)

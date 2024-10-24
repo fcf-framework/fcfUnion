@@ -1,0 +1,5 @@
+cmake_minimum_required(VERSION 3.0)
+set(PROJECT_NAME example002)
+project(${PROJECT_NAME})
+include_directories(SYSTEM ${CMAKE_SOURCE_DIR}/../../../)
+add_executable(exemple002 unionImpl.cpp main.cpp)

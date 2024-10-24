@@ -4,6 +4,7 @@
 ### Content
 
 * [Brief description](#short_description)
+* [Including headers in an executable](#including_headers_executable)
 
 <a href="https://nowpayments.io/donation?api_key=9E422CC-88M4J1V-H0S6M1Y-TZ7FPYX" target="_blank">
  <img src="https://nowpayments.io/images/embeds/donation-button-white.svg" alt="Cryptocurrency & Bitcoin donation button by NOWPayments" style="    max-width: 100%;">
@@ -131,6 +132,58 @@ int main(int a_argc, const char* a_argv[]){
 
 ```
 
+
+<a name="including_headers_executable"></a>
+### Including headers in an executable
+
+Как упониналось ранне, для подключения union.hpp необъодимо объявить реализацию. Для этого лучше всего использовать отдельный файл, к примеру unionImpl.cpp. Это позволит не выполнять повторную \
+компиляцию union.hpp при редактирвоании проекта. Такой подход приведен в качестве примера ниже:
+
+**unionImpl.cpp file:**
+```c++
+#define FCF_UNION_IMPLEMENTATION
+#include <union/union.hpp>
+```
+
+**main.cpp file:**
+```c++
+#include <union/union.hpp>
+#include <iostream>
+#include <fstream>
+
+int main(int a_argc, char* a_argv[]){
+  const char* confFilePath = "../test/config.json";
+  std::ifstream ifs;
+  ifs.exceptions(std::ifstream::failbit | std::ifstream::badbit);
+  try {
+    ifs.open(confFilePath);
+    ifs.exceptions(std::ifstream::badbit);
+  } catch(std::exception& e){
+    std::cout << "ERROR: Failed open file '" << confFilePath << "'."  << std::endl;
+    return 1;
+  }
+  fcf::Union u;
+  u.parse(ifs);
+  
+  // Result
+  // StdOut: The file contains a JSON object: 1
+  // StdOut: Fields:
+  // StdOut:   [param1]: some value
+  std::cout << "The file contains a JSON object: " << u.is<fcf::UnionMap>() << std::endl;
+  std::cout << "  Fields: " << std::endl;
+  std::cout << "    [param1]: " << u["param1"] << std::endl;
+  return 0;
+}
+```
+
+**CMakeLists.txt file**
+```
+cmake_minimum_required(VERSION 3.0)
+set(PROJECT_NAME example002)
+project(${PROJECT_NAME})
+include_directories(SYSTEM ${CMAKE_SOURCE_DIR}/../../../)
+add_executable(exemple002 unionImpl.cpp main.cpp)
+```
 
 
 
