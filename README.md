@@ -1,5 +1,5 @@
 
-## C++11 FCF::Union Bidirectional Conversion Union Type Framework (With JSON Support)
+## C++11 FCF::Union bidirectional conversion union type (With JSON Support)
 
 ### Content
 
