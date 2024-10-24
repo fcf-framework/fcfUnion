@@ -70,9 +70,9 @@ int main(int a_argc, const char* a_argv[]){
   // Result
   // StdOut: JSON for map value:
   // StdOut: {   
-  // StdOut:   "key1": "value1",
-  // StdOut:   "key2": [1, 2, 3],
-  // StdOut:   "key3": "value3"
+  // StdOut:     "key1": "value1",
+  // StdOut:     "key2": [1, 2, 3],
+  // StdOut:     "key3": "value3"
   // StdOut: }
   std::cout << std::endl;
   std::cout << "JSON for map value: \n" << ss.str() << std::endl;
