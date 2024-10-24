@@ -211,7 +211,6 @@ namespace fcf {
         bool _isend() const;
         value_iterator               _viiterator;
         IteratorType                 _vitype;
-        bool                         _ignoreNext;
         void*                        _owner;
     };
 
@@ -2781,21 +2780,20 @@ namespace fcf {
     Union::base_iterator::base_iterator()
       : _vitype(IT_UNDEFINED)
       , _owner(0)
-      , _ignoreNext(false) {
+      {
     }
 
     template <typename TPointer, typename TRef, typename TMapIterator, typename TVectorIterator>
     Union::basic_iterator<TPointer, TRef, TMapIterator, TVectorIterator>::basic_iterator(TVectorIterator a_iterator, const UnionVector* a_owner) {
       _vitype = IT_VECTOR;
       _owner = (void*)a_owner;
-      _ignoreNext = false;
       new ((void*)&_viiterator.vivector[0])TVectorIterator(a_iterator);
     }
 
     Union::base_iterator::base_iterator(oiterators_type a_iterators, std::vector< UnionMap::iterator >::iterator a_iterator, const UnionMap* a_owner)
       : _vitype(IT_OMAP)
       , _owner((void*)a_owner)
-      , _ignoreNext(false) {
+      {
       oiterator_type* oit = (oiterator_type*)&_viiterator.voiterators[0];
       new (oit) oiterator_type{a_iterators, a_iterator};
     }
@@ -2804,7 +2802,6 @@ namespace fcf {
     Union::basic_iterator<TPointer, TRef, TMapIterator, TVectorIterator>::basic_iterator(TMapIterator a_iterator, const UnionMap* a_owner) {
       _vitype = IT_MAP;
       _owner = (void*)a_owner;
-      _ignoreNext = false;
       new ((void*)&_viiterator.vimap[0])TMapIterator(a_iterator);
     }
 
@@ -2835,7 +2832,6 @@ namespace fcf {
       }
       _vitype = a_iterator._vitype;
       _owner = a_iterator._owner;
-      _ignoreNext = a_iterator._ignoreNext;
       if (a_iterator._vitype == IT_OMAP) {
         oiterator_type& oit = *(oiterator_type*)&a_iterator._viiterator.voiterators[0];
         new ((void*)&_viiterator.voiterators[0]) oiterator_type(oit);
