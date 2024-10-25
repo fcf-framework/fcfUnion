@@ -422,7 +422,7 @@ namespace fcf {
           }
 
           inline bool end() {
-            return _ref.eof();
+            return _ref.eof() || _ref.fail();
           }
 
           std::basic_istream<char>&  _ref;
@@ -2098,10 +2098,14 @@ namespace fcf {
         FCF_UNION_DECL_VISIBILITY_HIDDEN bool parseValue(TResolver& a_resolver, Union& a_union, const char** a_dstErrorMessage){
           skipSpaces(a_resolver);
           if (a_resolver.end()) {
-            FCF_THROW_OR_RESULT_ERROR(a_dstErrorMessage, "Incorrect value format");
+            FCF_THROW_OR_RESULT_ERROR(a_dstErrorMessage, "There is not enough data in the buffer to parse the value");
             return false;
           }
           unsigned char c = (unsigned char)a_resolver.read();
+          if (a_resolver.end()) {
+            FCF_THROW_OR_RESULT_ERROR(a_dstErrorMessage, "There is not enough data in the buffer to parse the value");
+            return false;
+          }
           if (c == '-' || (c >= (unsigned char)'0' && c <= (unsigned char)'9')){
             bool               minus;
             bool               point;
