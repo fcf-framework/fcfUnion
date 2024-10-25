@@ -5,6 +5,7 @@
 
 * [Brief description](#short_description)
 * [Including headers in an executable](#including_headers_executable)
+* [Creating a shared library with the Union class](#creating_shared_library)
 
 <a href="https://nowpayments.io/donation?api_key=9E422CC-88M4J1V-H0S6M1Y-TZ7FPYX" target="_blank">
  <img src="https://nowpayments.io/images/embeds/donation-button-white.svg" alt="Cryptocurrency & Bitcoin donation button by NOWPayments" style="    max-width: 100%;">
@@ -182,6 +183,97 @@ project(example002)
 include_directories(SYSTEM ${CMAKE_SOURCE_DIR}/../../../)
 add_executable(exemple002 unionImpl.cpp main.cpp)
 ```
+
+<a name="creating_shared_library"></a>
+### Creating a shared library with the Union class
+
+Вы также можете создать разделяемую библиотеку DLL/SO, которая будет экспортировать класс `fcf::Union`.
+
+1. Для этого в проекте разделяемой библиотеки должен быть объявлем макрос `FCF_UNION_EXPORT`
+2. В библиотеке должна быть объявлена реализация `fcf::Union` (Должен быть подключен заголовок union.hpp с объявленным макросом `FCF_UNION_IMPLEMENTATION`).
+3. В каждом проекте в котором подключена библиотека экспортируая `fcf::Union` должен быть объявелен макрос `FCF_UNION_IMPORT`
+
+Ниже представлен простой пример экспорта и импорта класса fcf::Union
+
+**executable/main.cpp file**
+```c++
+#include <fcfUnion/union.hpp>
+#include <iostream>
+#include <fstream>
+
+int main(int a_argc, char* a_argv[]){
+  std::ifstream ifs("config.json");
+  fcf::Union u;
+  u.parse(ifs);
+
+  if (u == fcf::undefined) {
+    std::cerr << "ERROR: Failed to read configuration file" << std::endl;
+    return 1;
+  }
+
+  std::cout << "  The file contains a JSON object: " << u.is<fcf::UnionMap>() << std::endl;
+  std::cout << "    Fields: " << std::endl;
+  std::cout << "      [param1]: " << u["param1"] << std::endl;
+  return 0;
+}
+```
+
+
+**executable/main.cpp file**
+```c++
+#include <fcfUnion/union.hpp>
+#include <iostream>
+#include <fstream>
+
+int main(int a_argc, char* a_argv[]){
+  std::ifstream ifs("config.json");
+  fcf::Union u;
+  u.parse(ifs);
+
+  if (u == fcf::undefined) {
+    std::cerr << "ERROR: Failed to read configuration file" << std::endl;
+    return 1;
+  }
+
+  std::cout << "  The file contains a JSON object: " << u.is<fcf::UnionMap>() << std::endl;
+  std::cout << "    Fields: " << std::endl;
+  std::cout << "      [param1]: " << u["param1"] << std::endl;
+  return 0;
+}
+```
+
+**library/unionImpl.cpp file**
+```c++
+#define FCF_IMPLEMENTATION
+#include <fcfUnion/union.hpp>
+```
+
+**CMakeLists.txt file**
+```
+cmake_minimum_required(VERSION 3.0)
+project(example003)
+include_directories(SYSTEM ${CMAKE_SOURCE_DIR}/../../../)
+
+set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
+file(COPY ../config.json DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
+
+
+add_library("example003l" SHARED ./library/unionImpl.cpp)
+# Declare the FCF_UNION_EXPORT macro for the shared library
+target_compile_definitions(example003l PRIVATE FCF_UNION_EXPORT)
+
+
+add_executable(example003 ./executable/main.cpp)
+# Declare the FCF_UNION_IMPORT macro for the executable
+target_compile_definitions(example003 PRIVATE FCF_UNION_IMPORT)
+target_link_libraries(example003 PRIVATE "example003l")
+```
+
+
+
+
 
 
 

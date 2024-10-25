@@ -8,7 +8,7 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
 file(COPY ../config.json DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
 
 
-add_library("example003l" SHARED ./library/unionImpl.cpp ./library/library.cpp ./library/library.hpp)
+add_library("example003l" SHARED ./library/unionImpl.cpp)
 # Declare the FCF_UNION_EXPORT macro for the shared library
 target_compile_definitions(example003l PRIVATE FCF_UNION_EXPORT)
 
