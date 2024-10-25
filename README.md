@@ -191,7 +191,7 @@ You can also create a shared DLL/SO that exports the `fcf::Union` class.
 
 1. To do this, the shared library project must declare the macro `FCF_UNION_EXPORT`
 2. The library must declare an implementation of `fcf::Union` (The header union.hpp with the declared macro `FCF_UNION_IMPLEMENTATION` must be included).
-3. In each project in which the library exporting `fcf::Union` is connected, the macro `FCF_UNION_IMPORT` must be declared.
+3. In each project in which the library is connected, the macro FCF_UNION_IMPORT must be declared.
 
 Below is a simple example of exporting and importing the fcf::Union class.
 
