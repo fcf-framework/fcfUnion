@@ -219,9 +219,10 @@ int main(int a_argc, char* a_argv[]){
 #include <fcfUnion/union.hpp>
 ```
 
+**CMakeLists.txt file**
+
 In the project parameters, we declare the macros `FCF_UNION_IMPORT` and `FCF_UNION_EXPORT`
 
-**CMakeLists.txt file**
 ```
 cmake_minimum_required(VERSION 3.0)
 project(example003)
