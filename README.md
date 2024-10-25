@@ -187,13 +187,13 @@ add_executable(exemple002 unionImpl.cpp main.cpp)
 <a name="creating_shared_library"></a>
 ### Creating a shared library with the Union class
 
-Вы также можете создать разделяемую библиотеку DLL/SO, которая будет экспортировать класс `fcf::Union`.
+You can also create a shared DLL/SO that exports the `fcf::Union` class.
 
-1. Для этого в проекте разделяемой библиотеки должен быть объявлем макрос `FCF_UNION_EXPORT`
-2. В библиотеке должна быть объявлена реализация `fcf::Union` (Должен быть подключен заголовок union.hpp с объявленным макросом `FCF_UNION_IMPLEMENTATION`).
-3. В каждом проекте в котором подключена библиотека экспортируая `fcf::Union` должен быть объявелен макрос `FCF_UNION_IMPORT`
+1. To do this, the shared library project must declare the macro `FCF_UNION_EXPORT`
+2. The library must declare an implementation of `fcf::Union` (The header union.hpp with the declared macro `FCF_UNION_IMPLEMENTATION` must be included).
+3. In each project in which the library exporting `fcf::Union` is connected, the macro `FCF_UNION_IMPORT` must be declared.
 
-Ниже представлен простой пример экспорта и импорта класса fcf::Union
+Below is a simple example of exporting and importing the fcf::Union class.
 
 **executable/main.cpp file**
 ```c++
