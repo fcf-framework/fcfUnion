@@ -1,7 +1,7 @@
 #ifndef FCF_UNION_SHARED
   #define FCF_UNION_IMPLEMENTATION
 #endif
-#include <union/union.hpp>
+#include <fcfUnion/union.hpp>
 #include <iostream>
 
 void unionCopyTest();

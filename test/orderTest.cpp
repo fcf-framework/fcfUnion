@@ -1,5 +1,5 @@
 #include <iostream>
-#include <union/union.hpp>
+#include <fcfUnion/union.hpp>
 
 #ifndef TEST
   #define TEST_STRINGIZE(x) TEST_STRINGIZE2(x)

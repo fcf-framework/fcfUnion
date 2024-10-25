@@ -34,7 +34,7 @@ The library is distributed in the form of header files and to start using it, yo
 ```c++
 #define FCF_UNION_IMPLEMENTATION
 
-#include <union/union.hpp>
+#include <fcfUnion/union.hpp>
 #include <iostream>
 #include <sstream>
 
@@ -141,12 +141,12 @@ As mentioned earlier, to include union.hpp it is necessary to declare the implem
 **unionImpl.cpp file:**
 ```c++
 #define FCF_UNION_IMPLEMENTATION
-#include <union/union.hpp>
+#include <fcfUnion/union.hpp>
 ```
 
 **main.cpp file:**
 ```c++
-#include <union/union.hpp>
+#include <fcfUnion/union.hpp>
 #include <iostream>
 #include <fstream>
 
