@@ -3,7 +3,7 @@
 #include <fstream>
 
 int main(int a_argc, char* a_argv[]){
-  const char* confFilePath = "../test/config.json";
+  const char* confFilePath = "config.json";
   std::ifstream ifs;
   ifs.exceptions(std::ifstream::failbit | std::ifstream::badbit);
   try {

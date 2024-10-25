@@ -1,0 +1,10 @@
+cmake_minimum_required(VERSION 3.0)
+project(example002)
+
+set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
+file(COPY ../config.json DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
+
+include_directories(SYSTEM ${CMAKE_SOURCE_DIR}/../../../)
+add_executable(example002 unionImpl.cpp main.cpp)

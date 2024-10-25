@@ -1,6 +1,4 @@
-#ifndef FCF_UNION_SHARED
-  #define FCF_UNION_IMPLEMENTATION
-#endif
+#define FCF_UNION_IMPLEMENTATION
 #include <fcfUnion/union.hpp>
 #include <iostream>
 
@@ -17,16 +15,6 @@ void findTest();
 void eraseTest();
 
 int main(int a_argc, char* a_argv[]){
-
-  #ifdef FCF_UNION_SHARED
-    #ifdef WIN32
-    __declspec(dllimport) void testInnerSharedFunc();
-    #else
-      void testInnerSharedFunc();
-    #endif
-    testInnerSharedFunc();
-  #endif
-
   cmpTest();
   unionIteratorTest();
   unionCopyTest();

@@ -12,54 +12,48 @@
 #include <iostream>
 
 
-#if defined(FCF_SHARED)
-  #define FCF_UNION_SHARED
-#endif
-
 #ifdef FCF_IMPLEMENTATION
   #define FCF_UNION_IMPLEMENTATION
 #endif
 
-#ifndef FCF_UNION_EXTERN
+#ifndef FCF_UNION_DELC_EXTERN
   #ifdef FCF_UNION_IMPLEMENTATION
-    #define FCF_UNION_EXTERN
+    #define FCF_UNION_DELC_EXTERN
   #else
-    #define FCF_UNION_EXTERN extern
+    #define FCF_UNION_DELC_EXTERN extern
   #endif
 #endif
 
-#ifndef FCF_UNION_TEMPLATE_EXTERN
+#ifndef FCF_UNION_DECL_TEMPLATE_EXTERN
   #ifdef _MSC_VER
-    #define FCF_UNION_TEMPLATE_EXTERN
+    #define FCF_UNION_DECL_TEMPLATE_EXTERN
   #else
     #ifdef FCF_UNION_IMPLEMENTATION
-      #define FCF_UNION_TEMPLATE_EXTERN
+      #define FCF_UNION_DECL_TEMPLATE_EXTERN
     #else
-      #define FCF_UNION_TEMPLATE_EXTERN extern
+      #define FCF_UNION_DECL_TEMPLATE_EXTERN extern
     #endif
   #endif
 #endif
 
-#ifndef FCF_UNION_SHARED_EXPORT
+#ifndef FCF_UNION_DECL_EXPORT
   #ifdef WIN32
-    #ifdef FCF_UNION_SHARED
-      #if defined(FCF_UNION_IMPLEMENTATION)
-        #define FCF_UNION_SHARED_EXPORT __declspec(dllexport)
-      #else
-        #define FCF_UNION_SHARED_EXPORT __declspec(dllimport)
-      #endif
+    #if defined(FCF_UNION_EXPORT)
+      #define FCF_UNION_DECL_EXPORT __declspec(dllexport)
+    #elif defined(FCF_UNION_IMPORT)
+      #define FCF_UNION_DECL_EXPORT __declspec(dllimport)
     #else
-      #define FCF_UNION_SHARED_EXPORT
+      #define FCF_UNION_DECL_EXPORT
     #endif
   #else
-    #define FCF_UNION_SHARED_EXPORT
+    #define FCF_UNION_DECL_EXPORT
   #endif
 #endif
 
 #ifndef WIN32
-  #define FCF_UNION_VISIBILITY_HIDDEN  __attribute__((visibility("hidden")))
+  #define FCF_UNION_DECL_VISIBILITY_HIDDEN  __attribute__((visibility("hidden")))
 #else
-  #define FCF_UNION_VISIBILITY_HIDDEN
+  #define FCF_UNION_DECL_VISIBILITY_HIDDEN
 #endif
 
 namespace fcf {
@@ -94,13 +88,13 @@ namespace fcf {
   #endif
 
   #ifndef FCF_UNDEFINED_STRUCT_DEFINED
-  #define FCF_UNDEFINED_STRUCT_DEFINED
+    #define FCF_UNDEFINED_STRUCT_DEFINED
     struct Undefined {
       bool operator <  (const Undefined& a_value) const { return false; }
       bool operator == (const Undefined& a_value) const { return true; }
       bool operator != (const Undefined& a_value) const { return false; }
     };
-    FCF_UNION_EXTERN FCF_UNION_SHARED_EXPORT Undefined undefined;
+    FCF_UNION_DELC_EXTERN FCF_UNION_DECL_EXPORT Undefined undefined;
   #endif
 
   #ifndef FCF_NULL_STRUCT_DEFINED
@@ -110,7 +104,7 @@ namespace fcf {
       bool operator == (const Null& a_value) const { return true; }
       bool operator != (const Null& a_value) const { return false; }
     };
-    FCF_UNION_EXTERN FCF_UNION_SHARED_EXPORT Null null;
+    FCF_UNION_DELC_EXTERN FCF_UNION_DECL_EXPORT Null null;
   #endif
 
   enum StringDataFormat {
@@ -182,7 +176,7 @@ namespace fcf {
     size_t     orderc;
     size_t     order;
 
-    struct FCF_UNION_SHARED_EXPORT base_iterator {
+    struct FCF_UNION_DECL_EXPORT base_iterator {
         friend struct Union;
         typedef std::shared_ptr< std::vector< UnionMap::iterator > > oiterators_type;
         struct oiterator_type {
@@ -221,7 +215,7 @@ namespace fcf {
     };
 
     template <typename TPointer, typename TRef, typename TMapIterator, typename TVectorIterator>
-    struct FCF_UNION_SHARED_EXPORT basic_iterator : public base_iterator {
+    struct FCF_UNION_DECL_EXPORT basic_iterator : public base_iterator {
       using base_iterator::base_iterator;
       inline basic_iterator() : base_iterator(){};
       basic_iterator(TVectorIterator a_iterator, const UnionVector* a_owner);
@@ -238,81 +232,81 @@ namespace fcf {
     typedef basic_iterator<TPointer, TRef, UnionMap::iterator, UnionVector::iterator> iterator;
     typedef basic_iterator<TConstPointer, TConstRef, UnionMap::const_iterator, UnionVector::const_iterator> const_iterator;
 
-    FCF_UNION_SHARED_EXPORT Union();
-    FCF_UNION_SHARED_EXPORT Union(const Union& a_union);
-    FCF_UNION_SHARED_EXPORT Union(UnionType a_type);
+    FCF_UNION_DECL_EXPORT Union();
+    FCF_UNION_DECL_EXPORT Union(const Union& a_union);
+    FCF_UNION_DECL_EXPORT Union(UnionType a_type);
     template <typename Ty>
-    FCF_UNION_SHARED_EXPORT Union(const Ty& a_value);
+    FCF_UNION_DECL_EXPORT Union(const Ty& a_value);
 
-    FCF_UNION_SHARED_EXPORT Union(const char* a_value);
+    FCF_UNION_DECL_EXPORT Union(const char* a_value);
 
-    FCF_UNION_SHARED_EXPORT ~Union();
+    FCF_UNION_DECL_EXPORT ~Union();
 
-    FCF_UNION_SHARED_EXPORT iterator obegin();
+    FCF_UNION_DECL_EXPORT iterator obegin();
 
-    FCF_UNION_SHARED_EXPORT iterator oend();
+    FCF_UNION_DECL_EXPORT iterator oend();
 
-    FCF_UNION_SHARED_EXPORT const_iterator cobegin() const;
+    FCF_UNION_DECL_EXPORT const_iterator cobegin() const;
 
-    FCF_UNION_SHARED_EXPORT const_iterator coend() const;
+    FCF_UNION_DECL_EXPORT const_iterator coend() const;
 
-    FCF_UNION_SHARED_EXPORT iterator begin();
+    FCF_UNION_DECL_EXPORT iterator begin();
 
-    FCF_UNION_SHARED_EXPORT iterator end();
+    FCF_UNION_DECL_EXPORT iterator end();
 
-    FCF_UNION_SHARED_EXPORT const_iterator cbegin() const;
+    FCF_UNION_DECL_EXPORT const_iterator cbegin() const;
 
-    FCF_UNION_SHARED_EXPORT const_iterator cend() const;
+    FCF_UNION_DECL_EXPORT const_iterator cend() const;
 
-    FCF_UNION_SHARED_EXPORT size_t size();
+    FCF_UNION_DECL_EXPORT size_t size();
 
-    FCF_UNION_SHARED_EXPORT iterator find(Union a_key);
+    FCF_UNION_DECL_EXPORT iterator find(Union a_key);
 
-    FCF_UNION_SHARED_EXPORT const Union& cat(Union a_key) const;
+    FCF_UNION_DECL_EXPORT const Union& cat(Union a_key) const;
 
-    FCF_UNION_SHARED_EXPORT Union& at(Union a_key);
+    FCF_UNION_DECL_EXPORT Union& at(Union a_key);
 
-    FCF_UNION_SHARED_EXPORT Union& operator[](Union a_key);
+    FCF_UNION_DECL_EXPORT Union& operator[](Union a_key);
 
-    FCF_UNION_SHARED_EXPORT iterator insert(Union a_value);
+    FCF_UNION_DECL_EXPORT iterator insert(Union a_value);
 
-    FCF_UNION_SHARED_EXPORT iterator insert(Union a_key, Union a_value);
+    FCF_UNION_DECL_EXPORT iterator insert(Union a_key, Union a_value);
 
-    FCF_UNION_SHARED_EXPORT iterator erase(const Union& a_key);
+    FCF_UNION_DECL_EXPORT iterator erase(const Union& a_key);
 
-    FCF_UNION_SHARED_EXPORT iterator erase(const iterator& a_iterator);
+    FCF_UNION_DECL_EXPORT iterator erase(const iterator& a_iterator);
 
-    FCF_UNION_SHARED_EXPORT void swap(Union& a_union);
-
-    template <typename Ty>
-    FCF_UNION_SHARED_EXPORT bool is() const;
+    FCF_UNION_DECL_EXPORT void swap(Union& a_union);
 
     template <typename Ty>
-    FCF_UNION_SHARED_EXPORT bool isCompatible(bool a_stringifyMode = false) const;
-
-    FCF_UNION_SHARED_EXPORT void parse(const std::string& a_source);
-
-    FCF_UNION_SHARED_EXPORT void parse(std::basic_istream<char>& a_source);
-
-    FCF_UNION_SHARED_EXPORT void stringify(std::string& a_dest, const StringifyOptions& a_options = StringifyOptions{}) const;
-
-    FCF_UNION_SHARED_EXPORT void stringify(std::basic_ostream<char>& a_dest, const StringifyOptions& a_options = StringifyOptions{}) const;
+    FCF_UNION_DECL_EXPORT bool is() const;
 
     template <typename Ty>
-    FCF_UNION_SHARED_EXPORT Ty get() const;
+    FCF_UNION_DECL_EXPORT bool isCompatible(bool a_stringifyMode = false) const;
+
+    FCF_UNION_DECL_EXPORT void parse(const std::string& a_source);
+
+    FCF_UNION_DECL_EXPORT void parse(std::basic_istream<char>& a_source);
+
+    FCF_UNION_DECL_EXPORT void stringify(std::string& a_dest, const StringifyOptions& a_options = StringifyOptions{}) const;
+
+    FCF_UNION_DECL_EXPORT void stringify(std::basic_ostream<char>& a_dest, const StringifyOptions& a_options = StringifyOptions{}) const;
 
     template <typename Ty>
-    FCF_UNION_SHARED_EXPORT typename Details::NUnion::TypeHelper<Ty>::far_type& ref();
+    FCF_UNION_DECL_EXPORT Ty get() const;
 
     template <typename Ty>
-    FCF_UNION_SHARED_EXPORT void set(const Ty& a_value);
+    FCF_UNION_DECL_EXPORT typename Details::NUnion::TypeHelper<Ty>::far_type& ref();
+
+    template <typename Ty>
+    FCF_UNION_DECL_EXPORT void set(const Ty& a_value);
 
     inline void set(const char* a_value)                            { set<const char*>(a_value); }
 
-    FCF_UNION_SHARED_EXPORT void set(const Union& a_value);
+    FCF_UNION_DECL_EXPORT void set(const Union& a_value);
 
     template <typename Ty>
-    FCF_UNION_SHARED_EXPORT void set();
+    FCF_UNION_DECL_EXPORT void set();
 
     template <typename Ty>
     inline Union& operator=(const Ty& a_value)                      { set(a_value); return *this; }
@@ -320,20 +314,20 @@ namespace fcf {
     inline Union& operator=(const Union& a_union)                   { set(a_union); return *this; }
 
     template <typename Ty>
-    FCF_UNION_SHARED_EXPORT bool equal(const Ty& a_value, bool a_strict) const;
+    FCF_UNION_DECL_EXPORT bool equal(const Ty& a_value, bool a_strict) const;
 
     inline bool equal(const char* a_value, bool a_strict) const     { return equal<const char*>(a_value, a_strict); }
 
-    FCF_UNION_SHARED_EXPORT bool equal(const Union& a_value, bool a_strict) const;
+    FCF_UNION_DECL_EXPORT bool equal(const Union& a_value, bool a_strict) const;
 
     template <typename Ty>
-    FCF_UNION_SHARED_EXPORT bool lessStr(const Ty& a_value) const;
+    FCF_UNION_DECL_EXPORT bool lessStr(const Ty& a_value) const;
 
     inline bool lessStr(const char* a_value) const                  { return lessStr<const char*>(a_value); }
 
-    FCF_UNION_SHARED_EXPORT bool lessStr(Union& a_value) const;
+    FCF_UNION_DECL_EXPORT bool lessStr(Union& a_value) const;
 
-    FCF_UNION_SHARED_EXPORT bool lessStr(const Union& a_value) const;
+    FCF_UNION_DECL_EXPORT bool lessStr(const Union& a_value) const;
 
     template <typename Ty>
     inline bool operator==(const Ty& a_value) const                 { return equal(a_value, false); }
@@ -349,10 +343,10 @@ namespace fcf {
     namespace Details {
       namespace NConvert {
 
-        FCF_UNION_VISIBILITY_HIDDEN bool isDouble(const std::string& a_str, bool a_unsigned);
+        FCF_UNION_DECL_VISIBILITY_HIDDEN bool isDouble(const std::string& a_str, bool a_unsigned);
 
         template <typename TFrom, typename TTo, typename TFormat = TNOP>
-        FCF_UNION_VISIBILITY_HIDDEN struct Converter{
+        FCF_UNION_DECL_VISIBILITY_HIDDEN struct Converter{
           template <typename TResolver, typename TReceiver>
           inline void operator()(TResolver& a_resolver, TReceiver& a_receiver, bool a_inner, const char** a_dstErrorMessage) {
             a_receiver((const TTo&)a_resolver());
@@ -360,7 +354,7 @@ namespace fcf {
         };
 
         template <typename Ty>
-        struct FCF_UNION_VISIBILITY_HIDDEN ConstResolver {
+        struct FCF_UNION_DECL_VISIBILITY_HIDDEN ConstResolver {
           typedef Ty item_type;
           typedef Ty value_type;
           ConstResolver(const value_type& a_ref)
@@ -373,7 +367,7 @@ namespace fcf {
         };
 
         template <typename TString>
-        struct FCF_UNION_VISIBILITY_HIDDEN SimpleConstResolver {
+        struct FCF_UNION_DECL_VISIBILITY_HIDDEN SimpleConstResolver {
           typedef char item_type;
           typedef std::string value_type;
 
@@ -406,7 +400,7 @@ namespace fcf {
 
 
         template <>
-        struct FCF_UNION_VISIBILITY_HIDDEN SimpleConstResolver< std::basic_istream<char> > {
+        struct FCF_UNION_DECL_VISIBILITY_HIDDEN SimpleConstResolver< std::basic_istream<char> > {
           typedef char item_type;
           typedef std::basic_istream<char> value_type;
 
@@ -436,7 +430,7 @@ namespace fcf {
         };
 
         template <typename Ty>
-        struct FCF_UNION_VISIBILITY_HIDDEN ConstUncommentResolver {
+        struct FCF_UNION_DECL_VISIBILITY_HIDDEN ConstUncommentResolver {
           typedef Ty resolver_type;
           typedef typename resolver_type::item_type item_type;
           typedef typename resolver_type::value_type value_type;
@@ -551,25 +545,25 @@ namespace fcf {
         };
 
         template <>
-        struct FCF_UNION_VISIBILITY_HIDDEN ConstResolver< std::string > : public ConstUncommentResolver< SimpleConstResolver<std::string> >{
+        struct FCF_UNION_DECL_VISIBILITY_HIDDEN ConstResolver< std::string > : public ConstUncommentResolver< SimpleConstResolver<std::string> >{
           typedef ConstUncommentResolver< SimpleConstResolver<std::string> > base_type;
           using ConstUncommentResolver< SimpleConstResolver<std::string> >::ConstUncommentResolver;
         };
 
         template <>
-        struct FCF_UNION_VISIBILITY_HIDDEN ConstResolver< const char* > : public ConstUncommentResolver< SimpleConstResolver<const char*> >{
+        struct FCF_UNION_DECL_VISIBILITY_HIDDEN ConstResolver< const char* > : public ConstUncommentResolver< SimpleConstResolver<const char*> >{
           typedef ConstUncommentResolver< SimpleConstResolver<const char*> > base_type;
           using ConstUncommentResolver< SimpleConstResolver<const char*> >::ConstUncommentResolver;
         };
 
         template <>
-        struct FCF_UNION_VISIBILITY_HIDDEN ConstResolver< std::basic_istream<char> > : public ConstUncommentResolver< SimpleConstResolver< std::basic_istream<char> > >{
+        struct FCF_UNION_DECL_VISIBILITY_HIDDEN ConstResolver< std::basic_istream<char> > : public ConstUncommentResolver< SimpleConstResolver< std::basic_istream<char> > >{
         typedef ConstUncommentResolver< SimpleConstResolver< std::basic_istream<char> > > base_type;
           using ConstUncommentResolver< SimpleConstResolver< std::basic_istream<char> > >::ConstUncommentResolver;
         };
 
         template <typename Ty, typename TOptions>
-        struct FCF_UNION_VISIBILITY_HIDDEN Receiver {
+        struct FCF_UNION_DECL_VISIBILITY_HIDDEN Receiver {
           typedef Ty value_type;
 
           inline void operator()(const Ty& a_value){
@@ -583,7 +577,7 @@ namespace fcf {
         };
 
         template <typename TOptions>
-        struct FCF_UNION_VISIBILITY_HIDDEN Receiver<std::string, TOptions> {
+        struct FCF_UNION_DECL_VISIBILITY_HIDDEN Receiver<std::string, TOptions> {
           typedef std::string value_type;
 
           Receiver(std::string& a_ref, const TOptions& a_options)
@@ -607,7 +601,7 @@ namespace fcf {
         };
 
         template <typename TOptions>
-        struct FCF_UNION_VISIBILITY_HIDDEN Receiver<std::basic_ostream<char>, TOptions> {
+        struct FCF_UNION_DECL_VISIBILITY_HIDDEN Receiver<std::basic_ostream<char>, TOptions> {
           typedef std::basic_ostream<char> destination_type;
           typedef std::string value_type;
 
@@ -635,7 +629,7 @@ namespace fcf {
         };
 
         template <typename TOptions>
-        struct FCF_UNION_VISIBILITY_HIDDEN Receiver<UnionVector, TOptions> {
+        struct FCF_UNION_DECL_VISIBILITY_HIDDEN Receiver<UnionVector, TOptions> {
           typedef UnionVector value_type;
 
           template <typename TOperand>
@@ -652,7 +646,7 @@ namespace fcf {
         };
 
         template <typename TOptions>
-        struct FCF_UNION_VISIBILITY_HIDDEN Receiver<UnionMap, TOptions> {
+        struct FCF_UNION_DECL_VISIBILITY_HIDDEN Receiver<UnionMap, TOptions> {
           typedef UnionMap value_type;
 
           inline void operator()(const UnionMap& a_value){
@@ -679,7 +673,7 @@ namespace fcf {
         // Convertion from int
         ///////////////////////////////////////
         template <>
-        struct FCF_UNION_VISIBILITY_HIDDEN Converter<int, std::string, TNOP>{
+        struct FCF_UNION_DECL_VISIBILITY_HIDDEN Converter<int, std::string, TNOP>{
           template <typename TResolver, typename TReceiver>
           inline void operator()(TResolver& a_resolver, TReceiver& a_receiver, bool a_inner, const char** a_dstErrorMessage) {
             return  a_receiver(std::to_string(a_resolver()));
@@ -687,7 +681,7 @@ namespace fcf {
         };
 
         template <>
-        struct FCF_UNION_VISIBILITY_HIDDEN Converter<int, UnionVector, TNOP>{
+        struct FCF_UNION_DECL_VISIBILITY_HIDDEN Converter<int, UnionVector, TNOP>{
           template <typename TResolver, typename TReceiver>
           inline void operator()(TResolver& a_resolver, TReceiver& a_receiver, bool a_inner, const char** a_dstErrorMessage) {
             FCF_THROW_OR_RESULT_ERROR(a_dstErrorMessage, "Incorrect vector value");
@@ -695,7 +689,7 @@ namespace fcf {
         };
 
         template <>
-        struct FCF_UNION_VISIBILITY_HIDDEN Converter<int, UnionMap, TNOP>{
+        struct FCF_UNION_DECL_VISIBILITY_HIDDEN Converter<int, UnionMap, TNOP>{
           template <typename TResolver, typename TReceiver>
           inline void operator()(TResolver& a_resolver, TReceiver& a_receiver, bool a_inner, const char** a_dstErrorMessage) {
             FCF_THROW_OR_RESULT_ERROR(a_dstErrorMessage, "Incorrect map value");
@@ -706,7 +700,7 @@ namespace fcf {
         // Convertion from unsigned int
         ///////////////////////////////////////
         template <>
-        struct FCF_UNION_VISIBILITY_HIDDEN Converter<unsigned int, std::string, TNOP>{
+        struct FCF_UNION_DECL_VISIBILITY_HIDDEN Converter<unsigned int, std::string, TNOP>{
           template <typename TResolver, typename TReceiver>
           inline void operator()(TResolver& a_resolver, TReceiver& a_receiver, bool a_inner, const char** a_dstErrorMessage) {
             return  a_receiver(std::to_string(a_resolver()));
@@ -714,7 +708,7 @@ namespace fcf {
         };
 
         template <>
-        struct FCF_UNION_VISIBILITY_HIDDEN Converter<unsigned int, UnionVector, TNOP>{
+        struct FCF_UNION_DECL_VISIBILITY_HIDDEN Converter<unsigned int, UnionVector, TNOP>{
           template <typename TResolver, typename TReceiver>
           inline void operator()(TResolver& a_resolver, TReceiver& a_receiver, bool a_inner, const char** a_dstErrorMessage) {
             FCF_THROW_OR_RESULT_ERROR(a_dstErrorMessage, "Incorrect vector value");
@@ -722,7 +716,7 @@ namespace fcf {
         };
 
         template <>
-        struct FCF_UNION_VISIBILITY_HIDDEN Converter<unsigned int, UnionMap, TNOP>{
+        struct FCF_UNION_DECL_VISIBILITY_HIDDEN Converter<unsigned int, UnionMap, TNOP>{
           template <typename TResolver, typename TReceiver>
           inline void operator()(TResolver& a_resolver, TReceiver& a_receiver, bool a_inner, const char** a_dstErrorMessage) {
             FCF_THROW_OR_RESULT_ERROR(a_dstErrorMessage, "Incorrect map value");
@@ -734,7 +728,7 @@ namespace fcf {
         // Convertion from long long
         ///////////////////////////////////////
         template <>
-        struct FCF_UNION_VISIBILITY_HIDDEN Converter<long long, std::string, TNOP>{
+        struct FCF_UNION_DECL_VISIBILITY_HIDDEN Converter<long long, std::string, TNOP>{
           template <typename TResolver, typename TReceiver>
           inline void operator()(TResolver& a_resolver, TReceiver& a_receiver, bool a_inner, const char** a_dstErrorMessage) {
             return  a_receiver(std::to_string(a_resolver()));
@@ -742,7 +736,7 @@ namespace fcf {
         };
 
         template <>
-        struct FCF_UNION_VISIBILITY_HIDDEN Converter<long long, UnionVector, TNOP>{
+        struct FCF_UNION_DECL_VISIBILITY_HIDDEN Converter<long long, UnionVector, TNOP>{
           template <typename TResolver, typename TReceiver>
           inline void operator()(TResolver& a_resolver, TReceiver& a_receiver, bool a_inner, const char** a_dstErrorMessage) {
             FCF_THROW_OR_RESULT_ERROR(a_dstErrorMessage, "Incorrect vector value");
@@ -750,7 +744,7 @@ namespace fcf {
         };
 
         template <>
-        struct FCF_UNION_VISIBILITY_HIDDEN Converter<long long, UnionMap, TNOP>{
+        struct FCF_UNION_DECL_VISIBILITY_HIDDEN Converter<long long, UnionMap, TNOP>{
           template <typename TResolver, typename TReceiver>
           inline void operator()(TResolver& a_resolver, TReceiver& a_receiver, bool a_inner, const char** a_dstErrorMessage) {
             FCF_THROW_OR_RESULT_ERROR(a_dstErrorMessage, "Incorrect map value");
@@ -761,7 +755,7 @@ namespace fcf {
         // Convertion from unsigned long long
         ///////////////////////////////////////
         template <>
-        struct FCF_UNION_VISIBILITY_HIDDEN Converter<unsigned long long, std::string, TNOP>{
+        struct FCF_UNION_DECL_VISIBILITY_HIDDEN Converter<unsigned long long, std::string, TNOP>{
           template <typename TResolver, typename TReceiver>
           inline void operator()(TResolver& a_resolver, TReceiver& a_receiver, bool a_inner, const char** a_dstErrorMessage) {
             return  a_receiver(std::to_string(a_resolver()));
@@ -769,7 +763,7 @@ namespace fcf {
         };
 
         template <>
-        struct FCF_UNION_VISIBILITY_HIDDEN Converter<unsigned long long, UnionVector, TNOP>{
+        struct FCF_UNION_DECL_VISIBILITY_HIDDEN Converter<unsigned long long, UnionVector, TNOP>{
           template <typename TResolver, typename TReceiver>
           inline void operator()(TResolver& a_resolver, TReceiver& a_receiver, bool a_inner, const char** a_dstErrorMessage) {
             FCF_THROW_OR_RESULT_ERROR(a_dstErrorMessage, "Incorrect vector value");
@@ -777,7 +771,7 @@ namespace fcf {
         };
 
         template <>
-        struct FCF_UNION_VISIBILITY_HIDDEN Converter<unsigned long long, UnionMap, TNOP>{
+        struct FCF_UNION_DECL_VISIBILITY_HIDDEN Converter<unsigned long long, UnionMap, TNOP>{
           template <typename TResolver, typename TReceiver>
           inline void operator()(TResolver& a_resolver, TReceiver& a_receiver, bool a_inner, const char** a_dstErrorMessage) {
             FCF_THROW_OR_RESULT_ERROR(a_dstErrorMessage, "Incorrect map value");
@@ -788,7 +782,7 @@ namespace fcf {
         // Convertion from double
         ///////////////////////////////////////
         template <>
-        struct FCF_UNION_VISIBILITY_HIDDEN Converter<double, std::string, TNOP>{
+        struct FCF_UNION_DECL_VISIBILITY_HIDDEN Converter<double, std::string, TNOP>{
           template <typename TResolver, typename TReceiver>
           inline void operator()(TResolver& a_resolver, TReceiver& a_receiver, bool a_inner, const char** a_dstErrorMessage) {
             return  a_receiver(std::to_string(a_resolver()));
@@ -796,7 +790,7 @@ namespace fcf {
         };
 
         template <>
-        struct FCF_UNION_VISIBILITY_HIDDEN Converter<double, UnionVector, TNOP>{
+        struct FCF_UNION_DECL_VISIBILITY_HIDDEN Converter<double, UnionVector, TNOP>{
           template <typename TResolver, typename TReceiver>
           inline void operator()(TResolver& a_resolver, TReceiver& a_receiver, bool a_inner, const char** a_dstErrorMessage) {
             FCF_THROW_OR_RESULT_ERROR(a_dstErrorMessage, "Incorrect vector value");
@@ -804,7 +798,7 @@ namespace fcf {
         };
 
         template <>
-        struct FCF_UNION_VISIBILITY_HIDDEN Converter<double, UnionMap, TNOP>{
+        struct FCF_UNION_DECL_VISIBILITY_HIDDEN Converter<double, UnionMap, TNOP>{
           template <typename TResolver, typename TReceiver>
           inline void operator()(TResolver& a_resolver, TReceiver& a_receiver, bool a_inner, const char** a_dstErrorMessage) {
             FCF_THROW_OR_RESULT_ERROR(a_dstErrorMessage, "Incorrect map value");
@@ -815,7 +809,7 @@ namespace fcf {
         // Convertion from bool
         ///////////////////////////////////////
         template <>
-        struct FCF_UNION_VISIBILITY_HIDDEN Converter<bool, int, TNOP>{
+        struct FCF_UNION_DECL_VISIBILITY_HIDDEN Converter<bool, int, TNOP>{
           template <typename TResolver, typename TReceiver>
           inline void operator()(TResolver& a_resolver, TReceiver& a_receiver, bool a_inner, const char** a_dstErrorMessage) {
             return  a_receiver(a_resolver() ? 1 : 0 );
@@ -823,7 +817,7 @@ namespace fcf {
         };
 
         template <>
-        struct FCF_UNION_VISIBILITY_HIDDEN Converter<bool, unsigned int, TNOP>{
+        struct FCF_UNION_DECL_VISIBILITY_HIDDEN Converter<bool, unsigned int, TNOP>{
           template <typename TResolver, typename TReceiver>
           inline void operator()(TResolver& a_resolver, TReceiver& a_receiver, bool a_inner, const char** a_dstErrorMessage) {
             return  a_receiver(a_resolver() ? 1 : 0 );
@@ -831,7 +825,7 @@ namespace fcf {
         };
 
         template <>
-        struct FCF_UNION_VISIBILITY_HIDDEN Converter<bool, long long, TNOP>{
+        struct FCF_UNION_DECL_VISIBILITY_HIDDEN Converter<bool, long long, TNOP>{
           template <typename TResolver, typename TReceiver>
           inline void operator()(TResolver& a_resolver, TReceiver& a_receiver, bool a_inner, const char** a_dstErrorMessage) {
             return  a_receiver(a_resolver() ? 1 : 0 );
@@ -839,7 +833,7 @@ namespace fcf {
         };
 
         template <>
-        struct FCF_UNION_VISIBILITY_HIDDEN Converter<bool, unsigned long long, TNOP>{
+        struct FCF_UNION_DECL_VISIBILITY_HIDDEN Converter<bool, unsigned long long, TNOP>{
           template <typename TResolver, typename TReceiver>
           inline void operator()(TResolver& a_resolver, TReceiver& a_receiver, bool a_inner, const char** a_dstErrorMessage) {
             return  a_receiver(a_resolver() ? 1 : 0 );
@@ -847,7 +841,7 @@ namespace fcf {
         };
 
         template <>
-        struct FCF_UNION_VISIBILITY_HIDDEN Converter<bool, double, TNOP>{
+        struct FCF_UNION_DECL_VISIBILITY_HIDDEN Converter<bool, double, TNOP>{
           template <typename TResolver, typename TReceiver>
           inline void operator()(TResolver& a_resolver, TReceiver& a_receiver, bool a_inner, const char** a_dstErrorMessage) {
             return  a_receiver(a_resolver() ? 1.0 : 0.0 );
@@ -855,7 +849,7 @@ namespace fcf {
         };
 
         template <>
-        struct FCF_UNION_VISIBILITY_HIDDEN Converter<bool, std::string, TNOP>{
+        struct FCF_UNION_DECL_VISIBILITY_HIDDEN Converter<bool, std::string, TNOP>{
           template <typename TResolver, typename TReceiver>
           inline void operator()(TResolver& a_resolver, TReceiver& a_receiver, bool a_inner, const char** a_dstErrorMessage) {
             return  a_receiver(a_resolver() ? "true" : "false" );
@@ -863,7 +857,7 @@ namespace fcf {
         };
 
         template <>
-        struct FCF_UNION_VISIBILITY_HIDDEN Converter<bool, UnionVector, TNOP>{
+        struct FCF_UNION_DECL_VISIBILITY_HIDDEN Converter<bool, UnionVector, TNOP>{
           template <typename TResolver, typename TReceiver>
           inline void operator()(TResolver& a_resolver, TReceiver& a_receiver, bool a_inner, const char** a_dstErrorMessage) {
             FCF_THROW_OR_RESULT_ERROR(a_dstErrorMessage, "Incorrect vector value");
@@ -871,7 +865,7 @@ namespace fcf {
         };
 
         template <>
-        struct FCF_UNION_VISIBILITY_HIDDEN Converter<bool, UnionMap, TNOP>{
+        struct FCF_UNION_DECL_VISIBILITY_HIDDEN Converter<bool, UnionMap, TNOP>{
           template <typename TResolver, typename TReceiver>
           inline void operator()(TResolver& a_resolver, TReceiver& a_receiver, bool a_inner, const char** a_dstErrorMessage) {
             FCF_THROW_OR_RESULT_ERROR(a_dstErrorMessage, "Incorrect map value");
@@ -883,7 +877,7 @@ namespace fcf {
         // Convertion from undefined
         ///////////////////////////////////////
         template <>
-        struct FCF_UNION_VISIBILITY_HIDDEN Converter<Undefined, Null, TNOP>{
+        struct FCF_UNION_DECL_VISIBILITY_HIDDEN Converter<Undefined, Null, TNOP>{
           template <typename TResolver, typename TReceiver>
           inline void operator()(TResolver& a_resolver, TReceiver& a_receiver, bool a_inner, const char** a_dstErrorMessage) {
             a_receiver(fcf::null);
@@ -891,7 +885,7 @@ namespace fcf {
         };
 
         template <>
-        struct FCF_UNION_VISIBILITY_HIDDEN Converter<Undefined, int, TNOP>{
+        struct FCF_UNION_DECL_VISIBILITY_HIDDEN Converter<Undefined, int, TNOP>{
           template <typename TResolver, typename TReceiver>
           inline void operator()(TResolver& a_resolver, TReceiver& a_receiver, bool a_inner, const char** a_dstErrorMessage) {
             FCF_THROW_OR_RESULT_ERROR(a_dstErrorMessage, "Incorrect int value");
@@ -899,7 +893,7 @@ namespace fcf {
         };
 
         template <>
-        struct FCF_UNION_VISIBILITY_HIDDEN Converter<Undefined, unsigned int, TNOP>{
+        struct FCF_UNION_DECL_VISIBILITY_HIDDEN Converter<Undefined, unsigned int, TNOP>{
           template <typename TResolver, typename TReceiver>
           inline void operator()(TResolver& a_resolver, TReceiver& a_receiver, bool a_inner, const char** a_dstErrorMessage) {
             FCF_THROW_OR_RESULT_ERROR(a_dstErrorMessage, "Incorrect unsigned int value");
@@ -907,7 +901,7 @@ namespace fcf {
         };
 
         template <>
-        struct FCF_UNION_VISIBILITY_HIDDEN Converter<Undefined, long long, TNOP>{
+        struct FCF_UNION_DECL_VISIBILITY_HIDDEN Converter<Undefined, long long, TNOP>{
           template <typename TResolver, typename TReceiver>
           inline void operator()(TResolver& a_resolver, TReceiver& a_receiver, bool a_inner, const char** a_dstErrorMessage) {
             FCF_THROW_OR_RESULT_ERROR(a_dstErrorMessage, "Incorrect long long value");
@@ -915,7 +909,7 @@ namespace fcf {
         };
 
         template <>
-        struct FCF_UNION_VISIBILITY_HIDDEN Converter<Undefined, unsigned long long, TNOP>{
+        struct FCF_UNION_DECL_VISIBILITY_HIDDEN Converter<Undefined, unsigned long long, TNOP>{
           template <typename TResolver, typename TReceiver>
           inline void operator()(TResolver& a_resolver, TReceiver& a_receiver, bool a_inner, const char** a_dstErrorMessage) {
             FCF_THROW_OR_RESULT_ERROR(a_dstErrorMessage, "Incorrect unsigned long long value");
@@ -923,7 +917,7 @@ namespace fcf {
         };
 
         template <>
-        struct FCF_UNION_VISIBILITY_HIDDEN Converter<Undefined, double, TNOP>{
+        struct FCF_UNION_DECL_VISIBILITY_HIDDEN Converter<Undefined, double, TNOP>{
           template <typename TResolver, typename TReceiver>
           inline void operator()(TResolver& a_resolver, TReceiver& a_receiver, bool a_inner, const char** a_dstErrorMessage) {
             FCF_THROW_OR_RESULT_ERROR(a_dstErrorMessage, "Incorrect double value");
@@ -931,7 +925,7 @@ namespace fcf {
         };
 
         template <>
-        struct FCF_UNION_VISIBILITY_HIDDEN Converter<Undefined, std::string, TNOP>{
+        struct FCF_UNION_DECL_VISIBILITY_HIDDEN Converter<Undefined, std::string, TNOP>{
           template <typename TResolver, typename TReceiver>
           inline void operator()(TResolver& a_resolver, TReceiver& a_receiver, bool a_inner, const char** a_dstErrorMessage) {
             a_receiver("undefined");
@@ -939,7 +933,7 @@ namespace fcf {
         };
 
         template <>
-        struct FCF_UNION_VISIBILITY_HIDDEN Converter<Undefined, UnionVector, TNOP>{
+        struct FCF_UNION_DECL_VISIBILITY_HIDDEN Converter<Undefined, UnionVector, TNOP>{
           template <typename TResolver, typename TReceiver>
           inline void operator()(TResolver& a_resolver, TReceiver& a_receiver, bool a_inner, const char** a_dstErrorMessage) {
             FCF_THROW_OR_RESULT_ERROR(a_dstErrorMessage, "Incorrect vector value");
@@ -947,7 +941,7 @@ namespace fcf {
         };
 
         template <>
-        struct FCF_UNION_VISIBILITY_HIDDEN Converter<Undefined, UnionMap, TNOP>{
+        struct FCF_UNION_DECL_VISIBILITY_HIDDEN Converter<Undefined, UnionMap, TNOP>{
           template <typename TResolver, typename TReceiver>
           inline void operator()(TResolver& a_resolver, TReceiver& a_receiver, bool a_inner, const char** a_dstErrorMessage) {
             FCF_THROW_OR_RESULT_ERROR(a_dstErrorMessage, "Incorrect map value");
@@ -958,7 +952,7 @@ namespace fcf {
         // Convertion from null
         ///////////////////////////////////////
         template <>
-        struct FCF_UNION_VISIBILITY_HIDDEN Converter<Null, Undefined, TNOP>{
+        struct FCF_UNION_DECL_VISIBILITY_HIDDEN Converter<Null, Undefined, TNOP>{
           template <typename TResolver, typename TReceiver>
           inline void operator()(TResolver& a_resolver, TReceiver& a_receiver, bool a_inner, const char** a_dstErrorMessage) {
             a_receiver(fcf::undefined);
@@ -966,7 +960,7 @@ namespace fcf {
         };
 
         template <>
-        struct FCF_UNION_VISIBILITY_HIDDEN Converter<Null, int, TNOP>{
+        struct FCF_UNION_DECL_VISIBILITY_HIDDEN Converter<Null, int, TNOP>{
           template <typename TResolver, typename TReceiver>
           inline void operator()(TResolver& a_resolver, TReceiver& a_receiver, bool a_inner, const char** a_dstErrorMessage) {
             FCF_THROW_OR_RESULT_ERROR(a_dstErrorMessage, "Incorrect int value");
@@ -974,7 +968,7 @@ namespace fcf {
         };
 
         template <>
-        struct FCF_UNION_VISIBILITY_HIDDEN Converter<Null, unsigned int, TNOP>{
+        struct FCF_UNION_DECL_VISIBILITY_HIDDEN Converter<Null, unsigned int, TNOP>{
           template <typename TResolver, typename TReceiver>
           inline void operator()(TResolver& a_resolver, TReceiver& a_receiver, bool a_inner, const char** a_dstErrorMessage) {
             FCF_THROW_OR_RESULT_ERROR(a_dstErrorMessage, "Incorrect undefined int value");
@@ -982,7 +976,7 @@ namespace fcf {
         };
 
         template <>
-        struct FCF_UNION_VISIBILITY_HIDDEN Converter<Null, long long, TNOP>{
+        struct FCF_UNION_DECL_VISIBILITY_HIDDEN Converter<Null, long long, TNOP>{
           template <typename TResolver, typename TReceiver>
           inline void operator()(TResolver& a_resolver, TReceiver& a_receiver, bool a_inner, const char** a_dstErrorMessage) {
             FCF_THROW_OR_RESULT_ERROR(a_dstErrorMessage, "Incorrect long long value");
@@ -990,7 +984,7 @@ namespace fcf {
         };
 
         template <>
-        struct FCF_UNION_VISIBILITY_HIDDEN Converter<Null, unsigned long long, TNOP>{
+        struct FCF_UNION_DECL_VISIBILITY_HIDDEN Converter<Null, unsigned long long, TNOP>{
           template <typename TResolver, typename TReceiver>
           inline void operator()(TResolver& a_resolver, TReceiver& a_receiver, bool a_inner, const char** a_dstErrorMessage) {
             FCF_THROW_OR_RESULT_ERROR(a_dstErrorMessage, "Incorrect unsigned long long value");
@@ -998,7 +992,7 @@ namespace fcf {
         };
 
         template <>
-        struct FCF_UNION_VISIBILITY_HIDDEN Converter<Null, double, TNOP>{
+        struct FCF_UNION_DECL_VISIBILITY_HIDDEN Converter<Null, double, TNOP>{
           template <typename TResolver, typename TReceiver>
           inline void operator()(TResolver& a_resolver, TReceiver& a_receiver, bool a_inner, const char** a_dstErrorMessage) {
             FCF_THROW_OR_RESULT_ERROR(a_dstErrorMessage, "Incorrect double value");
@@ -1006,7 +1000,7 @@ namespace fcf {
         };
 
         template <>
-        struct FCF_UNION_VISIBILITY_HIDDEN Converter<Null, std::string, TNOP>{
+        struct FCF_UNION_DECL_VISIBILITY_HIDDEN Converter<Null, std::string, TNOP>{
         template <typename TResolver, typename TReceiver>
           inline void operator()(TResolver& a_resolver, TReceiver& a_receiver, bool a_inner, const char** a_dstErrorMessage) {
             a_receiver("null");
@@ -1014,7 +1008,7 @@ namespace fcf {
         };
 
         template <>
-        struct FCF_UNION_VISIBILITY_HIDDEN Converter<Null, UnionVector, TNOP>{
+        struct FCF_UNION_DECL_VISIBILITY_HIDDEN Converter<Null, UnionVector, TNOP>{
           template <typename TResolver, typename TReceiver>
           inline void operator()(TResolver& a_resolver, TReceiver& a_receiver, bool a_inner, const char** a_dstErrorMessage) {
             FCF_THROW_OR_RESULT_ERROR(a_dstErrorMessage, "Incorrect vector value");
@@ -1022,7 +1016,7 @@ namespace fcf {
         };
 
         template <>
-        struct FCF_UNION_VISIBILITY_HIDDEN Converter<Null, UnionMap, TNOP>{
+        struct FCF_UNION_DECL_VISIBILITY_HIDDEN Converter<Null, UnionMap, TNOP>{
           template <typename TResolver, typename TReceiver>
           inline void operator()(TResolver& a_resolver, TReceiver& a_receiver, bool a_inner, const char** a_dstErrorMessage) {
             FCF_THROW_OR_RESULT_ERROR(a_dstErrorMessage, "Incorrect map value");
@@ -1034,7 +1028,7 @@ namespace fcf {
         ///////////////////////////////////////
 
         template <typename TResolver, typename Ty1, typename Ty2, typename Ty3 >
-        FCF_UNION_VISIBILITY_HIDDEN void parseNumber(TResolver& a_resolver, bool a_unsignedMode, bool* a_dstMinus, bool* a_dstPoint, Ty1* a_value1, Ty2* a_value2, Ty3* a_value3, const char** a_dstErrorMessage) {
+        FCF_UNION_DECL_VISIBILITY_HIDDEN void parseNumber(TResolver& a_resolver, bool a_unsignedMode, bool* a_dstMinus, bool* a_dstPoint, Ty1* a_value1, Ty2* a_value2, Ty3* a_value3, const char** a_dstErrorMessage) {
           if (a_value1) {
             *a_value1 = 0;
           }
@@ -1141,7 +1135,7 @@ namespace fcf {
         }
 
         template <typename TResolver>
-        FCF_UNION_VISIBILITY_HIDDEN std::string parseInnerString(TResolver& a_resolver, const char** a_dstErrorMessage) {
+        FCF_UNION_DECL_VISIBILITY_HIDDEN std::string parseInnerString(TResolver& a_resolver, const char** a_dstErrorMessage) {
           std::string str;
           skipSpaces(a_resolver);
           if (a_resolver.end()) {
@@ -1184,10 +1178,10 @@ namespace fcf {
         }
 
         template <typename TResolver>
-        FCF_UNION_VISIBILITY_HIDDEN bool parseKey(TResolver& a_resolver, Union& a_key, const char** a_dstErrorMessage);
+        FCF_UNION_DECL_VISIBILITY_HIDDEN bool parseKey(TResolver& a_resolver, Union& a_key, const char** a_dstErrorMessage);
 
         template <typename TResolver>
-        FCF_UNION_VISIBILITY_HIDDEN Undefined parseUndefined(TResolver& a_resolver, const char** a_dstErrorMessage) {
+        FCF_UNION_DECL_VISIBILITY_HIDDEN Undefined parseUndefined(TResolver& a_resolver, const char** a_dstErrorMessage) {
           skipSpaces(a_resolver);
           if (a_resolver.end()) {
             FCF_THROW_OR_RESULT_ERROR(a_dstErrorMessage, "Incorrect undefined value format");
@@ -1212,7 +1206,7 @@ namespace fcf {
         }
 
         template <typename TResolver>
-        FCF_UNION_VISIBILITY_HIDDEN Null parseNull(TResolver& a_resolver, const char** a_dstErrorMessage) {
+        FCF_UNION_DECL_VISIBILITY_HIDDEN Null parseNull(TResolver& a_resolver, const char** a_dstErrorMessage) {
           skipSpaces(a_resolver);
           if (a_resolver.end()) {
             FCF_THROW_OR_RESULT_ERROR(a_dstErrorMessage, "Incorrect null value format");
@@ -1237,7 +1231,7 @@ namespace fcf {
         }
 
         template <typename TResolver>
-        FCF_UNION_VISIBILITY_HIDDEN bool parseBool(TResolver& a_resolver, const char** a_dstErrorMessage) {
+        FCF_UNION_DECL_VISIBILITY_HIDDEN bool parseBool(TResolver& a_resolver, const char** a_dstErrorMessage) {
           size_t i = 0;
           unsigned char c;
           const char* pattern;
@@ -1290,7 +1284,7 @@ namespace fcf {
         }
 
         template <typename TResolver>
-        FCF_UNION_VISIBILITY_HIDDEN void skipSpaces(TResolver& a_resolver) {
+        FCF_UNION_DECL_VISIBILITY_HIDDEN void skipSpaces(TResolver& a_resolver) {
           while(!a_resolver.end()) {
             unsigned char c = (unsigned char)a_resolver.read();
             if (c > (unsigned char)' ') {
@@ -1301,10 +1295,10 @@ namespace fcf {
         }
 
         template <typename TResolver, typename TReceiver>
-        FCF_UNION_VISIBILITY_HIDDEN void parseVector(TResolver& a_resolver, TReceiver& a_receiver, const char** a_dstErrorMessage);
+        FCF_UNION_DECL_VISIBILITY_HIDDEN void parseVector(TResolver& a_resolver, TReceiver& a_receiver, const char** a_dstErrorMessage);
 
         template <>
-        struct FCF_UNION_VISIBILITY_HIDDEN Converter<std::string, std::string, TNOP>{
+        struct FCF_UNION_DECL_VISIBILITY_HIDDEN Converter<std::string, std::string, TNOP>{
           template <typename TResolver, typename TReceiver>
           void operator()(TResolver& a_resolver, TReceiver& a_receiver, bool a_inner, const char** a_dstErrorMessage) {
             if (!a_inner) {
@@ -1327,7 +1321,7 @@ namespace fcf {
         };
 
         template <>
-        struct FCF_UNION_VISIBILITY_HIDDEN Converter<std::string, fcf::Undefined, TNOP>{
+        struct FCF_UNION_DECL_VISIBILITY_HIDDEN Converter<std::string, fcf::Undefined, TNOP>{
           template <typename TResolver, typename TReceiver>
           void operator()(TResolver& a_resolver, TReceiver& a_receiver, bool a_inner, const char** a_dstErrorMessage) {
             const char* expected = "undefined";
@@ -1347,7 +1341,7 @@ namespace fcf {
         };
 
         template <>
-        struct FCF_UNION_VISIBILITY_HIDDEN Converter<std::string, fcf::Null, TNOP>{
+        struct FCF_UNION_DECL_VISIBILITY_HIDDEN Converter<std::string, fcf::Null, TNOP>{
           template <typename TResolver, typename TReceiver>
           void operator()(TResolver& a_resolver, TReceiver& a_receiver, bool a_inner, const char** a_dstErrorMessage) {
             const char* expected = "null";
@@ -1367,7 +1361,7 @@ namespace fcf {
         };
 
         template <>
-        struct FCF_UNION_VISIBILITY_HIDDEN Converter<std::string, int, TNOP>{
+        struct FCF_UNION_DECL_VISIBILITY_HIDDEN Converter<std::string, int, TNOP>{
           template <typename TResolver, typename TReceiver>
           inline void operator()(TResolver& a_resolver, TReceiver& a_receiver, bool a_inner, const char** a_dstErrorMessage) {
             int value = 0;
@@ -1377,7 +1371,7 @@ namespace fcf {
         };
 
         template <>
-        struct FCF_UNION_VISIBILITY_HIDDEN Converter<std::string, long long, TNOP>{
+        struct FCF_UNION_DECL_VISIBILITY_HIDDEN Converter<std::string, long long, TNOP>{
           template <typename TResolver, typename TReceiver>
           inline void operator()(TResolver& a_resolver, TReceiver& a_receiver, bool a_inner, const char** a_dstErrorMessage) {
             long long value = 0;
@@ -1387,7 +1381,7 @@ namespace fcf {
         };
 
         template <>
-        struct FCF_UNION_VISIBILITY_HIDDEN Converter<std::string, unsigned long long, TNOP>{
+        struct FCF_UNION_DECL_VISIBILITY_HIDDEN Converter<std::string, unsigned long long, TNOP>{
           template <typename TResolver, typename TReceiver>
           inline void operator()(TResolver& a_resolver, TReceiver& a_receiver, bool a_inner, const char** a_dstErrorMessage) {
             unsigned long long value = 0;
@@ -1397,7 +1391,7 @@ namespace fcf {
         };
 
         template <>
-        struct FCF_UNION_VISIBILITY_HIDDEN Converter<std::string, unsigned int, TNOP>{
+        struct FCF_UNION_DECL_VISIBILITY_HIDDEN Converter<std::string, unsigned int, TNOP>{
           template <typename TResolver, typename TReceiver>
           inline void operator()(TResolver& a_resolver, TReceiver& a_receiver, bool a_inner, const char** a_dstErrorMessage) {
             unsigned int value = 0;
@@ -1407,7 +1401,7 @@ namespace fcf {
         };
 
         template <>
-        struct FCF_UNION_VISIBILITY_HIDDEN Converter<std::string, double, TNOP>{
+        struct FCF_UNION_DECL_VISIBILITY_HIDDEN Converter<std::string, double, TNOP>{
           template <typename TResolver, typename TReceiver>
           inline void operator()(TResolver& a_resolver, TReceiver& a_receiver, bool a_inner, const char** a_dstErrorMessage) {
             double value = 0;
@@ -1417,7 +1411,7 @@ namespace fcf {
         };
 
         template <>
-        struct FCF_UNION_VISIBILITY_HIDDEN Converter<std::string, bool, TNOP>{
+        struct FCF_UNION_DECL_VISIBILITY_HIDDEN Converter<std::string, bool, TNOP>{
           template <typename TResolver, typename TReceiver>
           inline void operator()(TResolver& a_resolver, TReceiver& a_receiver, bool a_inner, const char** a_dstErrorMessage) {
             a_receiver(parseBool(a_resolver, a_dstErrorMessage));
@@ -1425,7 +1419,7 @@ namespace fcf {
         };
 
         template <>
-        struct FCF_UNION_VISIBILITY_HIDDEN Converter<std::string, UnionVector, TNOP>{
+        struct FCF_UNION_DECL_VISIBILITY_HIDDEN Converter<std::string, UnionVector, TNOP>{
           template <typename TResolver, typename TReceiver>
           inline void operator()(TResolver& a_resolver, TReceiver& a_receiver, bool a_inner, const char** a_dstErrorMessage) {
             parseVector(a_resolver, a_receiver, a_dstErrorMessage);
@@ -1433,7 +1427,7 @@ namespace fcf {
         };
 
         template <>
-        struct FCF_UNION_VISIBILITY_HIDDEN Converter<std::string, UnionMap, TNOP>{
+        struct FCF_UNION_DECL_VISIBILITY_HIDDEN Converter<std::string, UnionMap, TNOP>{
           template <typename TResolver, typename TReceiver>
           inline void operator()(TResolver& a_resolver, TReceiver& a_receiver, bool a_inner, const char** a_dstErrorMessage) {
             parseMap(a_resolver, a_receiver, a_dstErrorMessage);
@@ -1444,7 +1438,7 @@ namespace fcf {
         // Convertion from vector
         ///////////////////////////////////////
         template <typename Ty>
-        struct FCF_UNION_VISIBILITY_HIDDEN Converter<UnionVector, Ty, TNOP>{
+        struct FCF_UNION_DECL_VISIBILITY_HIDDEN Converter<UnionVector, Ty, TNOP>{
           template <typename TResolver, typename TReceiver>
           inline void operator()(TResolver& a_resolver, TReceiver& a_receiver, bool a_inner, const char** a_dstErrorMessage) {
             FCF_THROW_OR_RESULT_ERROR(a_dstErrorMessage, "Incorrect conversion from  vector value");
@@ -1452,7 +1446,7 @@ namespace fcf {
         };
 
         template <>
-        struct FCF_UNION_VISIBILITY_HIDDEN Converter<UnionVector, unsigned int, TNOP>{
+        struct FCF_UNION_DECL_VISIBILITY_HIDDEN Converter<UnionVector, unsigned int, TNOP>{
           template <typename TResolver, typename TReceiver>
           inline void operator()(TResolver& a_resolver, TReceiver& a_receiver, bool a_inner, const char** a_dstErrorMessage) {
             FCF_THROW_OR_RESULT_ERROR(a_dstErrorMessage, "Incorrect unsigned integer value");
@@ -1460,7 +1454,7 @@ namespace fcf {
         };
 
         template <>
-        struct FCF_UNION_VISIBILITY_HIDDEN Converter<UnionVector, long long, TNOP>{
+        struct FCF_UNION_DECL_VISIBILITY_HIDDEN Converter<UnionVector, long long, TNOP>{
           template <typename TResolver, typename TReceiver>
           inline void operator()(TResolver& a_resolver, TReceiver& a_receiver, bool a_inner, const char** a_dstErrorMessage) {
             FCF_THROW_OR_RESULT_ERROR(a_dstErrorMessage, "Incorrect long long value");
@@ -1468,7 +1462,7 @@ namespace fcf {
         };
 
         template <>
-        struct FCF_UNION_VISIBILITY_HIDDEN Converter<UnionVector, unsigned long long, TNOP>{
+        struct FCF_UNION_DECL_VISIBILITY_HIDDEN Converter<UnionVector, unsigned long long, TNOP>{
           template <typename TResolver, typename TReceiver>
           inline void operator()(TResolver& a_resolver, TReceiver& a_receiver, bool a_inner, const char** a_dstErrorMessage) {
             FCF_THROW_OR_RESULT_ERROR(a_dstErrorMessage, "Incorrect unsigned long long value");
@@ -1476,7 +1470,7 @@ namespace fcf {
         };
 
         template <>
-        struct FCF_UNION_VISIBILITY_HIDDEN Converter<UnionVector, double, TNOP>{
+        struct FCF_UNION_DECL_VISIBILITY_HIDDEN Converter<UnionVector, double, TNOP>{
           template <typename TResolver, typename TReceiver>
           inline void operator()(TResolver& a_resolver, TReceiver& a_receiver, bool a_inner, const char** a_dstErrorMessage) {
             FCF_THROW_OR_RESULT_ERROR(a_dstErrorMessage, "Incorrect double value");
@@ -1484,7 +1478,7 @@ namespace fcf {
         };
 
         template <>
-        struct FCF_UNION_VISIBILITY_HIDDEN Converter<UnionVector, bool, TNOP>{
+        struct FCF_UNION_DECL_VISIBILITY_HIDDEN Converter<UnionVector, bool, TNOP>{
           template <typename TResolver, typename TReceiver>
           inline void operator()(TResolver& a_resolver, TReceiver& a_receiver, bool a_inner, const char** a_dstErrorMessage) {
             FCF_THROW_OR_RESULT_ERROR(a_dstErrorMessage, "Incorrect boolean value");
@@ -1492,15 +1486,15 @@ namespace fcf {
         };
 
         template <>
-        struct FCF_UNION_VISIBILITY_HIDDEN Converter<UnionVector, std::string, TNOP>{
+        struct FCF_UNION_DECL_VISIBILITY_HIDDEN Converter<UnionVector, std::string, TNOP>{
           template <typename TResolver, typename TReceiver>
-          FCF_UNION_VISIBILITY_HIDDEN void operator()(TResolver& a_resolver, TReceiver& a_receiver, bool a_inner, const char** a_dstErrorMessage);
+          FCF_UNION_DECL_VISIBILITY_HIDDEN void operator()(TResolver& a_resolver, TReceiver& a_receiver, bool a_inner, const char** a_dstErrorMessage);
         };
 
         template <>
-        struct FCF_UNION_VISIBILITY_HIDDEN Converter<UnionVector, UnionMap, TNOP>{
+        struct FCF_UNION_DECL_VISIBILITY_HIDDEN Converter<UnionVector, UnionMap, TNOP>{
           template <typename TResolver, typename TReceiver>
-          FCF_UNION_VISIBILITY_HIDDEN void operator()(TResolver& a_resolver, TReceiver& a_receiver, bool a_inner, const char** a_dstErrorMessage){
+          FCF_UNION_DECL_VISIBILITY_HIDDEN void operator()(TResolver& a_resolver, TReceiver& a_receiver, bool a_inner, const char** a_dstErrorMessage){
             a_receiver.get().clear();
             const UnionVector& uv = a_resolver();
             for(size_t i = 0; i < uv.size(); ++i){
@@ -1514,7 +1508,7 @@ namespace fcf {
         // Convertion from map
         ///////////////////////////////////////
         template <typename Ty>
-        struct FCF_UNION_VISIBILITY_HIDDEN Converter<UnionMap, Ty, TNOP>{
+        struct FCF_UNION_DECL_VISIBILITY_HIDDEN Converter<UnionMap, Ty, TNOP>{
           template <typename TResolver, typename TReceiver>
           inline void operator()(TResolver& a_resolver, TReceiver& a_receiver, bool a_inner, const char** a_dstErrorMessage) {
             FCF_THROW_OR_RESULT_ERROR(a_dstErrorMessage, "Incorrect integer value");
@@ -1522,7 +1516,7 @@ namespace fcf {
         };
 
         template <>
-        struct FCF_UNION_VISIBILITY_HIDDEN Converter<UnionMap, unsigned int, TNOP>{
+        struct FCF_UNION_DECL_VISIBILITY_HIDDEN Converter<UnionMap, unsigned int, TNOP>{
           template <typename TResolver, typename TReceiver>
           inline void operator()(TResolver& a_resolver, TReceiver& a_receiver, bool a_inner, const char** a_dstErrorMessage) {
             FCF_THROW_OR_RESULT_ERROR(a_dstErrorMessage, "Incorrect unsigned integer value");
@@ -1530,7 +1524,7 @@ namespace fcf {
         };
 
         template <>
-        struct FCF_UNION_VISIBILITY_HIDDEN Converter<UnionMap, long long, TNOP>{
+        struct FCF_UNION_DECL_VISIBILITY_HIDDEN Converter<UnionMap, long long, TNOP>{
           template <typename TResolver, typename TReceiver>
           inline void operator()(TResolver& a_resolver, TReceiver& a_receiver, bool a_inner, const char** a_dstErrorMessage) {
             FCF_THROW_OR_RESULT_ERROR(a_dstErrorMessage, "Incorrect long long value");
@@ -1538,7 +1532,7 @@ namespace fcf {
         };
 
         template <>
-        struct FCF_UNION_VISIBILITY_HIDDEN Converter<UnionMap, unsigned long long, TNOP>{
+        struct FCF_UNION_DECL_VISIBILITY_HIDDEN Converter<UnionMap, unsigned long long, TNOP>{
           template <typename TResolver, typename TReceiver>
           inline void operator()(TResolver& a_resolver, TReceiver& a_receiver, bool a_inner, const char** a_dstErrorMessage) {
             FCF_THROW_OR_RESULT_ERROR(a_dstErrorMessage, "Incorrect unsigned long long value");
@@ -1546,7 +1540,7 @@ namespace fcf {
         };
 
         template <>
-        struct FCF_UNION_VISIBILITY_HIDDEN Converter<UnionMap, double, TNOP>{
+        struct FCF_UNION_DECL_VISIBILITY_HIDDEN Converter<UnionMap, double, TNOP>{
           template <typename TResolver, typename TReceiver>
           inline void operator()(TResolver& a_resolver, TReceiver& a_receiver, bool a_inner, const char** a_dstErrorMessage) {
             FCF_THROW_OR_RESULT_ERROR(a_dstErrorMessage, "Incorrect double value");
@@ -1554,7 +1548,7 @@ namespace fcf {
         };
 
         template <>
-        struct FCF_UNION_VISIBILITY_HIDDEN Converter<UnionMap, bool, TNOP>{
+        struct FCF_UNION_DECL_VISIBILITY_HIDDEN Converter<UnionMap, bool, TNOP>{
           template <typename TResolver, typename TReceiver>
           inline void operator()(TResolver& a_resolver, TReceiver& a_receiver, bool a_inner, const char** a_dstErrorMessage) {
             FCF_THROW_OR_RESULT_ERROR(a_dstErrorMessage, "Incorrect boolean value");
@@ -1562,19 +1556,19 @@ namespace fcf {
         };
 
         template <>
-        struct FCF_UNION_VISIBILITY_HIDDEN Converter<UnionMap, std::string, TNOP>{
+        struct FCF_UNION_DECL_VISIBILITY_HIDDEN Converter<UnionMap, std::string, TNOP>{
           template <typename TResolver, typename TReceiver>
           void operator()(TResolver& a_resolver, TReceiver& a_receiver, bool a_inner, const char** a_dstErrorMessage);
         };
 
         template <>
-        struct FCF_UNION_VISIBILITY_HIDDEN Converter<UnionMap, UnionVector, TNOP>{
+        struct FCF_UNION_DECL_VISIBILITY_HIDDEN Converter<UnionMap, UnionVector, TNOP>{
           template <typename TResolver, typename TReceiver>
           void operator()(TResolver& a_resolver, TReceiver& a_receiver, bool a_inner, const char** a_dstErrorMessage);
         };
 
         template <typename TFrom, typename TTo>
-        struct FCF_UNION_VISIBILITY_HIDDEN Converter<TFrom, TTo, JSONFormat>{
+        struct FCF_UNION_DECL_VISIBILITY_HIDDEN Converter<TFrom, TTo, JSONFormat>{
           template <typename TResolver, typename TReceiver>
           inline void operator()(TResolver& a_resolver, TReceiver& a_receiver, bool a_inner, const char** a_dstErrorMessage) {
             Converter<TFrom, TTo, TNOP>()(a_resolver, a_receiver, a_inner, a_dstErrorMessage);
@@ -1582,7 +1576,7 @@ namespace fcf {
         };
 
         template <>
-        struct FCF_UNION_VISIBILITY_HIDDEN Converter<std::string, std::string, JSONFormat>{
+        struct FCF_UNION_DECL_VISIBILITY_HIDDEN Converter<std::string, std::string, JSONFormat>{
           template <typename TResolver, typename TReceiver>
           inline void operator()(TResolver& a_resolver, TReceiver& a_receiver, bool a_inner, const char** a_dstErrorMessage) {
             Converter<std::string, std::string, TNOP>()(a_resolver, a_receiver, true, a_dstErrorMessage);
@@ -1590,7 +1584,7 @@ namespace fcf {
         };
 
         template <typename TResolver>
-        bool FCF_UNION_VISIBILITY_HIDDEN parseValue(TResolver& a_resolver, Union& a_union, const char** a_dstErrorMessage);
+        bool FCF_UNION_DECL_VISIBILITY_HIDDEN parseValue(TResolver& a_resolver, Union& a_union, const char** a_dstErrorMessage);
 
       } // NConvert namespace
     } // Details namespace
@@ -1604,7 +1598,7 @@ namespace fcf {
       }
 
       template <typename Type, typename FarType, int TypeIndex>
-      struct FCF_UNION_VISIBILITY_HIDDEN BaseTypeHelper{
+      struct FCF_UNION_DECL_VISIBILITY_HIDDEN BaseTypeHelper{
         typedef FarType far_type;
         enum { type_index = TypeIndex };
 
@@ -1620,14 +1614,14 @@ namespace fcf {
       };
 
       template <typename Type, typename FarType, int TypeIndex>
-      struct FCF_UNION_VISIBILITY_HIDDEN BaseBoolTypeHelper : public BaseTypeHelper<Type, FarType, TypeIndex> {
+      struct FCF_UNION_DECL_VISIBILITY_HIDDEN BaseBoolTypeHelper : public BaseTypeHelper<Type, FarType, TypeIndex> {
         inline static bool init()                                                         { return false; };
         template <typename TValue> inline static FarType farValue(const TValue& a_value)  { return (FarType)a_value; }
         template <typename TValue> inline static bool isfalse(const TValue& a_value)      { return a_value; }
       };
 
       template <typename Type, typename FarType, int TypeIndex>
-      struct FCF_UNION_VISIBILITY_HIDDEN BaseNumberTypeHelper : public BaseTypeHelper<Type, FarType, TypeIndex> {
+      struct FCF_UNION_DECL_VISIBILITY_HIDDEN BaseNumberTypeHelper : public BaseTypeHelper<Type, FarType, TypeIndex> {
         inline static Type init()                                                         { return 0; };
         template <typename TValue> inline static FarType farValue(const TValue& a_value) { return (FarType)a_value; }
         inline static bool isnumber()   { return true; };
@@ -1641,7 +1635,7 @@ namespace fcf {
       };
 
       template <typename Type, typename FarType, int TypeIndex>
-      struct FCF_UNION_VISIBILITY_HIDDEN BaseUnsignedNumberTypeHelper : public BaseNumberTypeHelper<Type, FarType, TypeIndex> {
+      struct FCF_UNION_DECL_VISIBILITY_HIDDEN BaseUnsignedNumberTypeHelper : public BaseNumberTypeHelper<Type, FarType, TypeIndex> {
         inline static bool isnumber()   { return true; };
         inline static bool isunsigned() { return true; };
         inline static bool isdouble()   { return false; };
@@ -1651,12 +1645,12 @@ namespace fcf {
       };
 
       template <typename Type, typename FarType, int TypeIndex>
-      struct FCF_UNION_VISIBILITY_HIDDEN BaseDoubleTypeHelper : public BaseNumberTypeHelper<Type, FarType, TypeIndex> {
+      struct FCF_UNION_DECL_VISIBILITY_HIDDEN BaseDoubleTypeHelper : public BaseNumberTypeHelper<Type, FarType, TypeIndex> {
         inline static bool isdouble() { return true; };
       };
 
       template <typename Type, typename FarType, int TypeIndex>
-      struct FCF_UNION_VISIBILITY_HIDDEN BaseCStrTypeHelper : public BaseTypeHelper<Type, FarType, TypeIndex>{
+      struct FCF_UNION_DECL_VISIBILITY_HIDDEN BaseCStrTypeHelper : public BaseTypeHelper<Type, FarType, TypeIndex>{
         template <typename TValue> inline static FarType farValue(const TValue& a_value) { return FarType(a_value); }
         template <typename Ty> inline static bool isfalse(Ty& a_str){ return !a_str[0]; }
         template <typename Ty> inline static const char* cstr(Ty& a_str){ return &a_str[0]; }
@@ -1664,68 +1658,68 @@ namespace fcf {
       };
 
       template <typename Type, typename FarType, int TypeIndex>
-      struct FCF_UNION_VISIBILITY_HIDDEN BaseStrTypeHelper : public BaseCStrTypeHelper<Type, FarType, TypeIndex>{
+      struct FCF_UNION_DECL_VISIBILITY_HIDDEN BaseStrTypeHelper : public BaseCStrTypeHelper<Type, FarType, TypeIndex>{
         template <typename Ty> inline static std::string& str(Ty& a_str){ return a_str; }
         template <typename TValue> inline static FarType& farValue(const TValue& a_value) { return (FarType&)a_value; }
       };
 
       template <typename Type, typename FarType, int TypeIndex>
-      struct FCF_UNION_VISIBILITY_HIDDEN BaseOStreamTypeHelper : public BaseCStrTypeHelper<Type, FarType, TypeIndex>{
+      struct FCF_UNION_DECL_VISIBILITY_HIDDEN BaseOStreamTypeHelper : public BaseCStrTypeHelper<Type, FarType, TypeIndex>{
         template <typename TValue> inline static std::string str(TValue& a_str){ return std::string(); }
         template <typename TValue> inline static FarType farValue(const TValue& a_value) { return FarType{}; }
       };
 
 
       template <typename Ty>
-      struct FCF_UNION_VISIBILITY_HIDDEN TypeHelper : public BaseTypeHelper<Ty, Ty, UT_UNDEFINED>                                                                 { };
+      struct FCF_UNION_DECL_VISIBILITY_HIDDEN TypeHelper : public BaseTypeHelper<Ty, Ty, UT_UNDEFINED>                                                                 { };
       template <>
-      struct FCF_UNION_VISIBILITY_HIDDEN TypeHelper<fcf::Undefined>: public BaseTypeHelper<fcf::Undefined, fcf::Undefined, UT_UNDEFINED>                          {
+      struct FCF_UNION_DECL_VISIBILITY_HIDDEN TypeHelper<fcf::Undefined>: public BaseTypeHelper<fcf::Undefined, fcf::Undefined, UT_UNDEFINED>                          {
         template <typename TValue> inline static far_type farValue(const TValue& a_value) { return far_type{}; }
       } ;
       template <>
-      struct FCF_UNION_VISIBILITY_HIDDEN TypeHelper<fcf::Null>: public BaseTypeHelper<fcf::Null, fcf::Null, UT_NULL>                                              {
+      struct FCF_UNION_DECL_VISIBILITY_HIDDEN TypeHelper<fcf::Null>: public BaseTypeHelper<fcf::Null, fcf::Null, UT_NULL>                                              {
         template <typename TValue> inline static far_type farValue(const TValue& a_value) { return far_type{}; }
       };
       template <>
-      struct FCF_UNION_VISIBILITY_HIDDEN TypeHelper<bool>: public BaseBoolTypeHelper<bool, bool, UT_BOOL>                                                         { };
+      struct FCF_UNION_DECL_VISIBILITY_HIDDEN TypeHelper<bool>: public BaseBoolTypeHelper<bool, bool, UT_BOOL>                                                         { };
       template <>
-      struct FCF_UNION_VISIBILITY_HIDDEN TypeHelper<double>: public BaseDoubleTypeHelper<double, double, UT_DOUBLE>                                               { };
+      struct FCF_UNION_DECL_VISIBILITY_HIDDEN TypeHelper<double>: public BaseDoubleTypeHelper<double, double, UT_DOUBLE>                                               { };
       template <>
-      struct FCF_UNION_VISIBILITY_HIDDEN TypeHelper<float>: public BaseDoubleTypeHelper<float, double, UT_DOUBLE>                                                 { };
+      struct FCF_UNION_DECL_VISIBILITY_HIDDEN TypeHelper<float>: public BaseDoubleTypeHelper<float, double, UT_DOUBLE>                                                 { };
       template <>
-      struct FCF_UNION_VISIBILITY_HIDDEN TypeHelper<int>: public BaseNumberTypeHelper<int, int, UT_INT>                                                           { };
+      struct FCF_UNION_DECL_VISIBILITY_HIDDEN TypeHelper<int>: public BaseNumberTypeHelper<int, int, UT_INT>                                                           { };
       template <>
-      struct FCF_UNION_VISIBILITY_HIDDEN TypeHelper<unsigned int>: public BaseUnsignedNumberTypeHelper<unsigned int, unsigned int, UT_UINT>                       { };
+      struct FCF_UNION_DECL_VISIBILITY_HIDDEN TypeHelper<unsigned int>: public BaseUnsignedNumberTypeHelper<unsigned int, unsigned int, UT_UINT>                       { };
       template <>
-      struct FCF_UNION_VISIBILITY_HIDDEN TypeHelper<short int>: public BaseNumberTypeHelper<short int, int, UT_INT>                                               { };
+      struct FCF_UNION_DECL_VISIBILITY_HIDDEN TypeHelper<short int>: public BaseNumberTypeHelper<short int, int, UT_INT>                                               { };
       template <>
-      struct FCF_UNION_VISIBILITY_HIDDEN TypeHelper<unsigned short int>: public BaseUnsignedNumberTypeHelper<unsigned short int, unsigned int, UT_UINT>           { };
+      struct FCF_UNION_DECL_VISIBILITY_HIDDEN TypeHelper<unsigned short int>: public BaseUnsignedNumberTypeHelper<unsigned short int, unsigned int, UT_UINT>           { };
       template <>
-      struct FCF_UNION_VISIBILITY_HIDDEN TypeHelper<long>: public BaseNumberTypeHelper<long, long long, UT_LONGLONG>                                             { };
+      struct FCF_UNION_DECL_VISIBILITY_HIDDEN TypeHelper<long>: public BaseNumberTypeHelper<long, long long, UT_LONGLONG>                                             { };
       template <>
-      struct FCF_UNION_VISIBILITY_HIDDEN TypeHelper<unsigned long>: public BaseUnsignedNumberTypeHelper<unsigned long long, unsigned long long, UT_ULONGLONG>    { };
+      struct FCF_UNION_DECL_VISIBILITY_HIDDEN TypeHelper<unsigned long>: public BaseUnsignedNumberTypeHelper<unsigned long long, unsigned long long, UT_ULONGLONG>    { };
       template <>
-      struct FCF_UNION_VISIBILITY_HIDDEN TypeHelper<long long>: public BaseNumberTypeHelper<long long, long long, UT_LONGLONG>                                   { };
+      struct FCF_UNION_DECL_VISIBILITY_HIDDEN TypeHelper<long long>: public BaseNumberTypeHelper<long long, long long, UT_LONGLONG>                                   { };
       template <>
-      struct FCF_UNION_VISIBILITY_HIDDEN TypeHelper<unsigned long long>: public BaseUnsignedNumberTypeHelper<unsigned long long, unsigned long long, UT_ULONGLONG>           { };
+      struct FCF_UNION_DECL_VISIBILITY_HIDDEN TypeHelper<unsigned long long>: public BaseUnsignedNumberTypeHelper<unsigned long long, unsigned long long, UT_ULONGLONG>           { };
       template <>
-      struct FCF_UNION_VISIBILITY_HIDDEN TypeHelper<std::string>: public BaseStrTypeHelper<std::string, std::string, UT_STRING>                                   { };
+      struct FCF_UNION_DECL_VISIBILITY_HIDDEN TypeHelper<std::string>: public BaseStrTypeHelper<std::string, std::string, UT_STRING>                                   { };
       template <>
-      struct FCF_UNION_VISIBILITY_HIDDEN TypeHelper< std::basic_ostream<char>  >: public BaseOStreamTypeHelper<std::basic_ostream<char>, std::string, UT_STRING>  { };
+      struct FCF_UNION_DECL_VISIBILITY_HIDDEN TypeHelper< std::basic_ostream<char>  >: public BaseOStreamTypeHelper<std::basic_ostream<char>, std::string, UT_STRING>  { };
       template <>
-      struct FCF_UNION_VISIBILITY_HIDDEN TypeHelper<char*>: public BaseCStrTypeHelper<char*, std::string, UT_STRING>                                              { };
+      struct FCF_UNION_DECL_VISIBILITY_HIDDEN TypeHelper<char*>: public BaseCStrTypeHelper<char*, std::string, UT_STRING>                                              { };
       template <>
-      struct FCF_UNION_VISIBILITY_HIDDEN TypeHelper<const char*>: public BaseCStrTypeHelper<const char*, std::string, UT_STRING>                                  { };
+      struct FCF_UNION_DECL_VISIBILITY_HIDDEN TypeHelper<const char*>: public BaseCStrTypeHelper<const char*, std::string, UT_STRING>                                  { };
       template <size_t Size>
-      struct FCF_UNION_VISIBILITY_HIDDEN TypeHelper< char[Size] >: public BaseCStrTypeHelper< char[Size], std::string, UT_STRING>                                 { };
+      struct FCF_UNION_DECL_VISIBILITY_HIDDEN TypeHelper< char[Size] >: public BaseCStrTypeHelper< char[Size], std::string, UT_STRING>                                 { };
       template <size_t Size>
-      struct FCF_UNION_VISIBILITY_HIDDEN TypeHelper< const char[Size] >: public BaseCStrTypeHelper< const char[Size], std::string, UT_STRING>                     { };
+      struct FCF_UNION_DECL_VISIBILITY_HIDDEN TypeHelper< const char[Size] >: public BaseCStrTypeHelper< const char[Size], std::string, UT_STRING>                     { };
       template <>
-      struct FCF_UNION_VISIBILITY_HIDDEN TypeHelper<UnionVector>: public BaseTypeHelper<UnionVector, UnionVector, UT_VECTOR>                                      {
+      struct FCF_UNION_DECL_VISIBILITY_HIDDEN TypeHelper<UnionVector>: public BaseTypeHelper<UnionVector, UnionVector, UT_VECTOR>                                      {
         template <typename TValue> inline static far_type& farValue(const TValue& a_value) { return (far_type&)a_value; }
       };
       template <>
-      struct FCF_UNION_VISIBILITY_HIDDEN TypeHelper<UnionMap>: public BaseTypeHelper<UnionMap, UnionMap, UT_MAP>                                                  {
+      struct FCF_UNION_DECL_VISIBILITY_HIDDEN TypeHelper<UnionMap>: public BaseTypeHelper<UnionMap, UnionMap, UT_MAP>                                                  {
         template <typename TValue> inline static far_type& farValue(const TValue& a_value) { return (far_type&)a_value; }
       };
 
@@ -1754,7 +1748,7 @@ namespace fcf {
         };
 
         template <typename TIterator>
-        FCF_UNION_VISIBILITY_HIDDEN bool orderLess(const TIterator& a_left, const TIterator& a_right){
+        FCF_UNION_DECL_VISIBILITY_HIDDEN bool orderLess(const TIterator& a_left, const TIterator& a_right){
           if (a_left->second.order && a_right->second.order) {
             return a_left->second.order != a_right->second.order
                 ? a_left->second.order < a_right->second.order
@@ -1775,7 +1769,7 @@ namespace fcf {
         template <>
         struct StringCleaner<std::string>{ inline void operator()(std::string& a_value){ a_value.clear(); } };
 
-        struct FCF_UNION_VISIBILITY_HIDDEN Cmp{
+        struct FCF_UNION_DECL_VISIBILITY_HIDDEN Cmp{
           template <typename TLeft, typename  TRight>
           static bool equal(TLeft& a_left, TRight a_right, bool a_strict);
           template <typename TLeft, typename  TRight>
@@ -1787,7 +1781,7 @@ namespace fcf {
         template <int ExecutorIndex, typename TSelf, typename Ty>
         struct Executor{};
 
-        struct FCF_UNION_VISIBILITY_HIDDEN Selector {
+        struct FCF_UNION_DECL_VISIBILITY_HIDDEN Selector {
           template <typename TResult, int ExecutorIndex, typename Ty, typename TOperand>
           static TResult select(int a_type, TOperand& a_operand) {
             switch(a_type){
@@ -1808,7 +1802,7 @@ namespace fcf {
         };
 
         template <typename TSelf, typename Ty>
-        struct FCF_UNION_VISIBILITY_HIDDEN Executor<EI_CONST_GET, TSelf, Ty>{
+        struct FCF_UNION_DECL_VISIBILITY_HIDDEN Executor<EI_CONST_GET, TSelf, Ty>{
           template <typename TCallData>
           void operator()(TCallData& a_callData){
             typedef typename TCallData::options_type options_type;
@@ -1820,7 +1814,7 @@ namespace fcf {
         };
 
         template <typename Ty>
-        struct FCF_UNION_VISIBILITY_HIDDEN Executor<EI_CONST_GET, Ty, Ty>{
+        struct FCF_UNION_DECL_VISIBILITY_HIDDEN Executor<EI_CONST_GET, Ty, Ty>{
           template <typename TCallData>
           inline void operator()(TCallData& a_callData){
             a_callData.destination = *(Ty*)(void*)&a_callData.value.vint;
@@ -1828,7 +1822,7 @@ namespace fcf {
         };
 
         template <typename TSelf, typename Ty>
-        struct FCF_UNION_VISIBILITY_HIDDEN Executor<EI_TO_JSON, TSelf, Ty>{
+        struct FCF_UNION_DECL_VISIBILITY_HIDDEN Executor<EI_TO_JSON, TSelf, Ty>{
           template <typename TCallData>
           void operator()(TCallData& a_callData){
             typedef typename TCallData::options_type options_type;
@@ -1840,7 +1834,7 @@ namespace fcf {
         };
 
         template <typename TSelf, typename Ty>
-        struct FCF_UNION_VISIBILITY_HIDDEN Executor<EI_GET, TSelf, Ty>{
+        struct FCF_UNION_DECL_VISIBILITY_HIDDEN Executor<EI_GET, TSelf, Ty>{
           template <typename TCallData>
           Ty& operator()(TCallData& a_callData){
             UnionType type = (UnionType)TypeHelper<Ty>::type_index;
@@ -1871,7 +1865,7 @@ namespace fcf {
         };
 
         template <typename TSelf, typename Ty>
-        struct FCF_UNION_VISIBILITY_HIDDEN Executor<EI_CONVERT, TSelf, Ty>{
+        struct FCF_UNION_DECL_VISIBILITY_HIDDEN Executor<EI_CONVERT, TSelf, Ty>{
           template <typename TCallData>
           inline void operator()(TCallData a_callData){
             typedef typename TCallData::receiver_type::value_type value_type;
@@ -1884,7 +1878,7 @@ namespace fcf {
         // Set
         ///////////////////////////////////////
         template <typename Ty>
-        struct FCF_UNION_VISIBILITY_HIDDEN Executor<EI_SET, Ty, TNOP>{
+        struct FCF_UNION_DECL_VISIBILITY_HIDDEN Executor<EI_SET, Ty, TNOP>{
           template <typename TValue >
           inline void operator()(UnionType& a_dstType,  UnionValue& a_dstUValueu, const TValue& a_value){
             a_dstType = (UnionType)Details::NUnion::TypeHelper<Ty>::type_index;
@@ -1893,7 +1887,7 @@ namespace fcf {
         };
 
         template <>
-        struct FCF_UNION_VISIBILITY_HIDDEN Executor<fcf::Details::NUnion::EI_SET, std::string, TNOP>{
+        struct FCF_UNION_DECL_VISIBILITY_HIDDEN Executor<fcf::Details::NUnion::EI_SET, std::string, TNOP>{
           template <typename Ty >
           inline void operator()(UnionType& a_dstType, UnionValue& a_dstUValueu, const Ty& a_value){
             a_dstType = UT_STRING;
@@ -1902,7 +1896,7 @@ namespace fcf {
         };
 
         template <>
-        struct FCF_UNION_VISIBILITY_HIDDEN Executor<fcf::Details::NUnion::EI_SET, UnionVector, TNOP>{
+        struct FCF_UNION_DECL_VISIBILITY_HIDDEN Executor<fcf::Details::NUnion::EI_SET, UnionVector, TNOP>{
           template <typename Ty >
           inline void operator()(UnionType& a_dstType, UnionValue& a_dstUValueu, const Ty& a_value){
             a_dstType = UT_VECTOR;
@@ -1911,7 +1905,7 @@ namespace fcf {
         };
 
         template <>
-        struct FCF_UNION_VISIBILITY_HIDDEN Executor<fcf::Details::NUnion::EI_SET, UnionMap, TNOP>{
+        struct FCF_UNION_DECL_VISIBILITY_HIDDEN Executor<fcf::Details::NUnion::EI_SET, UnionMap, TNOP>{
           template <typename Ty >
           inline void operator()(UnionType& a_dstType, UnionValue& a_dstUValueu, const Ty& a_value){
             a_dstType = UT_MAP;
@@ -1923,7 +1917,7 @@ namespace fcf {
         // Initiliaze
         ///////////////////////////////////////
         template <typename Ty>
-        struct FCF_UNION_VISIBILITY_HIDDEN Executor<EI_INITIALIZE, Ty, TNOP>{
+        struct FCF_UNION_DECL_VISIBILITY_HIDDEN Executor<EI_INITIALIZE, Ty, TNOP>{
           template <typename TData>
           inline void operator()(TData& a_data){
             typedef typename Details::NUnion::TypeHelper<Ty>::far_type far_type;
@@ -1937,7 +1931,7 @@ namespace fcf {
         // Less
         ///////////////////////////////////////
         template <typename Ty>
-        struct FCF_UNION_VISIBILITY_HIDDEN Executor<EI_LESS, Ty, TNOP>{
+        struct FCF_UNION_DECL_VISIBILITY_HIDDEN Executor<EI_LESS, Ty, TNOP>{
           template <typename TData>
           inline bool operator()(TData& a_data){
             Ty& left = *(Ty*)(void*)&a_data.left;
@@ -1946,7 +1940,7 @@ namespace fcf {
         };
 
         template <typename Ty>
-        struct FCF_UNION_VISIBILITY_HIDDEN Executor<EI_LESS2, Ty, TNOP>{
+        struct FCF_UNION_DECL_VISIBILITY_HIDDEN Executor<EI_LESS2, Ty, TNOP>{
           template <typename TData>
           bool operator()(TData& a_data){
             Ty& right = *(Ty*)(void*)&a_data.right;
@@ -1960,7 +1954,7 @@ namespace fcf {
         };
 
         template <typename Ty>
-        struct FCF_UNION_VISIBILITY_HIDDEN Executor<EI_EQUAL2, Ty, TNOP>{
+        struct FCF_UNION_DECL_VISIBILITY_HIDDEN Executor<EI_EQUAL2, Ty, TNOP>{
           template <typename TData>
           bool operator()(TData& a_data){
             Ty& right = *(Ty*)(void*)&a_data.right;
@@ -1975,7 +1969,7 @@ namespace fcf {
         };
 
         template <typename Ty>
-        struct FCF_UNION_VISIBILITY_HIDDEN Executor<EI_EQUAL, Ty, TNOP>{
+        struct FCF_UNION_DECL_VISIBILITY_HIDDEN Executor<EI_EQUAL, Ty, TNOP>{
           template <typename TData>
           inline bool operator()(TData& a_data){
             Ty& left = *(Ty*)(void*)&a_data.left;
@@ -1988,7 +1982,7 @@ namespace fcf {
         // Copy
         ///////////////////////////////////////
         template <typename Ty>
-        struct FCF_UNION_VISIBILITY_HIDDEN Executor<EI_COPY, Ty, TNOP>{
+        struct FCF_UNION_DECL_VISIBILITY_HIDDEN Executor<EI_COPY, Ty, TNOP>{
           template <typename TCallData>
           inline void operator()(TCallData a_callData){
             Ty& value = *((Ty*)(void*)&a_callData.source.vint);
@@ -1996,7 +1990,7 @@ namespace fcf {
           }
         };
         template <>
-        struct FCF_UNION_VISIBILITY_HIDDEN Executor<EI_COPY, UnionVector, TNOP>{
+        struct FCF_UNION_DECL_VISIBILITY_HIDDEN Executor<EI_COPY, UnionVector, TNOP>{
           template <typename TCallData>
           inline void operator()(TCallData a_callData){
             UnionVector& value = *((UnionVector*)(void*)&a_callData.source.vvector[0]);
@@ -2008,13 +2002,13 @@ namespace fcf {
         // Destroy
         ///////////////////////////////////////
         template <typename Ty>
-        struct FCF_UNION_VISIBILITY_HIDDEN Executor<EI_DESTROY, Ty, TNOP>{
+        struct FCF_UNION_DECL_VISIBILITY_HIDDEN Executor<EI_DESTROY, Ty, TNOP>{
           inline void operator()(UnionValue& a_uvalue){
           }
         };
 
         template <>
-        struct FCF_UNION_VISIBILITY_HIDDEN Executor<EI_DESTROY, std::string, TNOP>{
+        struct FCF_UNION_DECL_VISIBILITY_HIDDEN Executor<EI_DESTROY, std::string, TNOP>{
           inline void operator()(UnionValue& a_uvalue){
             std::string* value = (std::string*)(void*)&a_uvalue.vstring[0];
             callDestructor(value);
@@ -2022,7 +2016,7 @@ namespace fcf {
         };
 
         template <>
-        struct FCF_UNION_VISIBILITY_HIDDEN Executor<EI_DESTROY, UnionVector, TNOP>{
+        struct FCF_UNION_DECL_VISIBILITY_HIDDEN Executor<EI_DESTROY, UnionVector, TNOP>{
           inline void operator()(UnionValue& a_uvalue){
             UnionVector* value = (UnionVector*)(void*)&a_uvalue.vstring[0];
             callDestructor(value);
@@ -2030,7 +2024,7 @@ namespace fcf {
         };
 
         template <>
-        struct FCF_UNION_VISIBILITY_HIDDEN Executor<EI_DESTROY, UnionMap, TNOP>{
+        struct FCF_UNION_DECL_VISIBILITY_HIDDEN Executor<EI_DESTROY, UnionMap, TNOP>{
           inline void operator()(UnionValue& a_uvalue){
             UnionMap* value = (UnionMap*)(void*)&a_uvalue.vstring[0];
             callDestructor(value);
@@ -2101,7 +2095,7 @@ namespace fcf {
         };
 
         template <typename TResolver>
-        FCF_UNION_VISIBILITY_HIDDEN bool parseValue(TResolver& a_resolver, Union& a_union, const char** a_dstErrorMessage){
+        FCF_UNION_DECL_VISIBILITY_HIDDEN bool parseValue(TResolver& a_resolver, Union& a_union, const char** a_dstErrorMessage){
           skipSpaces(a_resolver);
           if (a_resolver.end()) {
             FCF_THROW_OR_RESULT_ERROR(a_dstErrorMessage, "Incorrect value format");
@@ -2154,7 +2148,7 @@ namespace fcf {
         }
 
         template <typename TResolver, typename TReceiver>
-        FCF_UNION_VISIBILITY_HIDDEN void parseVector(TResolver& a_resolver, TReceiver& a_receiver, const char** a_dstErrorMessage) {
+        FCF_UNION_DECL_VISIBILITY_HIDDEN void parseVector(TResolver& a_resolver, TReceiver& a_receiver, const char** a_dstErrorMessage) {
           a_receiver.get().clear();
           skipSpaces(a_resolver);
           if (a_resolver.end()) {
@@ -2216,7 +2210,7 @@ namespace fcf {
         }
 
         template <typename TResolver, typename TReceiver>
-        FCF_UNION_VISIBILITY_HIDDEN void parseMap(TResolver& a_resolver, TReceiver& a_receiver, const char** a_dstErrorMessage) {
+        FCF_UNION_DECL_VISIBILITY_HIDDEN void parseMap(TResolver& a_resolver, TReceiver& a_receiver, const char** a_dstErrorMessage) {
           a_receiver.get().clear();
           skipSpaces(a_resolver);
           if (a_resolver.end()) {
@@ -2745,7 +2739,7 @@ namespace fcf {
     namespace Details {
       namespace NConvert {
 
-        FCF_UNION_VISIBILITY_HIDDEN bool isDouble(const std::string& a_str, bool a_unsigned) {
+        FCF_UNION_DECL_VISIBILITY_HIDDEN bool isDouble(const std::string& a_str, bool a_unsigned) {
           size_t dt = 0;
           size_t m = 0;
           std::string::const_iterator it = a_str.begin();
@@ -2779,8 +2773,8 @@ namespace fcf {
   // Union::base_iterator impementation
   ////////////////////////!//////////////////////
 
-  FCF_UNION_TEMPLATE_EXTERN template struct Union::basic_iterator<Union*, Union&, UnionMap::iterator, UnionVector::iterator>;
-  FCF_UNION_TEMPLATE_EXTERN template struct Union::basic_iterator<const Union*, const Union&, UnionMap::const_iterator, UnionVector::const_iterator>;
+  FCF_UNION_DECL_TEMPLATE_EXTERN template struct Union::basic_iterator<Union*, Union&, UnionMap::iterator, UnionVector::iterator>;
+  FCF_UNION_DECL_TEMPLATE_EXTERN template struct Union::basic_iterator<const Union*, const Union&, UnionMap::const_iterator, UnionVector::const_iterator>;
 
   #ifdef FCF_UNION_IMPLEMENTATION
     Union::base_iterator::base_iterator()
@@ -3014,22 +3008,22 @@ namespace fcf {
         Details::NUnion::Executor<fcf::Details::NUnion::EI_SET, far_type, TNOP>()(type, value, a_value);
     }
   #endif // #ifdef FCF_UNION_IMPLEMENTATION
-  FCF_UNION_TEMPLATE_EXTERN template FCF_UNION_SHARED_EXPORT Union::Union(const Undefined& a_value);
-  FCF_UNION_TEMPLATE_EXTERN template FCF_UNION_SHARED_EXPORT Union::Union(const Null& a_value);
-  FCF_UNION_TEMPLATE_EXTERN template FCF_UNION_SHARED_EXPORT Union::Union(const bool& a_value);
-  FCF_UNION_TEMPLATE_EXTERN template FCF_UNION_SHARED_EXPORT Union::Union(const int& a_value);
-  FCF_UNION_TEMPLATE_EXTERN template FCF_UNION_SHARED_EXPORT Union::Union(const unsigned int& a_value);
-  FCF_UNION_TEMPLATE_EXTERN template FCF_UNION_SHARED_EXPORT Union::Union(const long& a_value);
-  FCF_UNION_TEMPLATE_EXTERN template FCF_UNION_SHARED_EXPORT Union::Union(const unsigned long& a_value);
-  FCF_UNION_TEMPLATE_EXTERN template FCF_UNION_SHARED_EXPORT Union::Union(const long long& a_value);
-  FCF_UNION_TEMPLATE_EXTERN template FCF_UNION_SHARED_EXPORT Union::Union(const unsigned long long& a_value);
-  FCF_UNION_TEMPLATE_EXTERN template FCF_UNION_SHARED_EXPORT Union::Union(const float& a_value);
-  FCF_UNION_TEMPLATE_EXTERN template FCF_UNION_SHARED_EXPORT Union::Union(const double& a_value);
-  FCF_UNION_TEMPLATE_EXTERN template FCF_UNION_SHARED_EXPORT Union::Union(const std::string& a_value);
-  FCF_UNION_TEMPLATE_EXTERN template FCF_UNION_SHARED_EXPORT Union::Union(const ConstCharPtr& a_value);
-  FCF_UNION_TEMPLATE_EXTERN template FCF_UNION_SHARED_EXPORT Union::Union(const CharPtr& a_value);
-  FCF_UNION_TEMPLATE_EXTERN template FCF_UNION_SHARED_EXPORT Union::Union(const UnionVector& a_value);
-  FCF_UNION_TEMPLATE_EXTERN template FCF_UNION_SHARED_EXPORT Union::Union(const UnionMap& a_value);
+  FCF_UNION_DECL_TEMPLATE_EXTERN template FCF_UNION_DECL_EXPORT Union::Union(const Undefined& a_value);
+  FCF_UNION_DECL_TEMPLATE_EXTERN template FCF_UNION_DECL_EXPORT Union::Union(const Null& a_value);
+  FCF_UNION_DECL_TEMPLATE_EXTERN template FCF_UNION_DECL_EXPORT Union::Union(const bool& a_value);
+  FCF_UNION_DECL_TEMPLATE_EXTERN template FCF_UNION_DECL_EXPORT Union::Union(const int& a_value);
+  FCF_UNION_DECL_TEMPLATE_EXTERN template FCF_UNION_DECL_EXPORT Union::Union(const unsigned int& a_value);
+  FCF_UNION_DECL_TEMPLATE_EXTERN template FCF_UNION_DECL_EXPORT Union::Union(const long& a_value);
+  FCF_UNION_DECL_TEMPLATE_EXTERN template FCF_UNION_DECL_EXPORT Union::Union(const unsigned long& a_value);
+  FCF_UNION_DECL_TEMPLATE_EXTERN template FCF_UNION_DECL_EXPORT Union::Union(const long long& a_value);
+  FCF_UNION_DECL_TEMPLATE_EXTERN template FCF_UNION_DECL_EXPORT Union::Union(const unsigned long long& a_value);
+  FCF_UNION_DECL_TEMPLATE_EXTERN template FCF_UNION_DECL_EXPORT Union::Union(const float& a_value);
+  FCF_UNION_DECL_TEMPLATE_EXTERN template FCF_UNION_DECL_EXPORT Union::Union(const double& a_value);
+  FCF_UNION_DECL_TEMPLATE_EXTERN template FCF_UNION_DECL_EXPORT Union::Union(const std::string& a_value);
+  FCF_UNION_DECL_TEMPLATE_EXTERN template FCF_UNION_DECL_EXPORT Union::Union(const ConstCharPtr& a_value);
+  FCF_UNION_DECL_TEMPLATE_EXTERN template FCF_UNION_DECL_EXPORT Union::Union(const CharPtr& a_value);
+  FCF_UNION_DECL_TEMPLATE_EXTERN template FCF_UNION_DECL_EXPORT Union::Union(const UnionVector& a_value);
+  FCF_UNION_DECL_TEMPLATE_EXTERN template FCF_UNION_DECL_EXPORT Union::Union(const UnionMap& a_value);
 
   #ifdef FCF_UNION_IMPLEMENTATION
     Union::Union(const char* a_value)
@@ -3333,22 +3327,22 @@ namespace fcf {
       return ti  == type;
     }
   #endif // #ifdef FCF_UNION_IMPLEMENTATION
-  FCF_UNION_TEMPLATE_EXTERN template FCF_UNION_SHARED_EXPORT bool Union::is<Undefined>() const;
-  FCF_UNION_TEMPLATE_EXTERN template FCF_UNION_SHARED_EXPORT bool Union::is<Null>() const;
-  FCF_UNION_TEMPLATE_EXTERN template FCF_UNION_SHARED_EXPORT bool Union::is<bool>() const;
-  FCF_UNION_TEMPLATE_EXTERN template FCF_UNION_SHARED_EXPORT bool Union::is<int>() const;
-  FCF_UNION_TEMPLATE_EXTERN template FCF_UNION_SHARED_EXPORT bool Union::is<unsigned int>() const;
-  FCF_UNION_TEMPLATE_EXTERN template FCF_UNION_SHARED_EXPORT bool Union::is<long>() const;
-  FCF_UNION_TEMPLATE_EXTERN template FCF_UNION_SHARED_EXPORT bool Union::is<unsigned long>() const;
-  FCF_UNION_TEMPLATE_EXTERN template FCF_UNION_SHARED_EXPORT bool Union::is<long long>() const;
-  FCF_UNION_TEMPLATE_EXTERN template FCF_UNION_SHARED_EXPORT bool Union::is<unsigned long long>() const;
-  FCF_UNION_TEMPLATE_EXTERN template FCF_UNION_SHARED_EXPORT bool Union::is<double>() const;
-  FCF_UNION_TEMPLATE_EXTERN template FCF_UNION_SHARED_EXPORT bool Union::is<float>() const;
-  FCF_UNION_TEMPLATE_EXTERN template FCF_UNION_SHARED_EXPORT bool Union::is<std::string>() const;
-  FCF_UNION_TEMPLATE_EXTERN template FCF_UNION_SHARED_EXPORT bool Union::is<char*>() const;
-  FCF_UNION_TEMPLATE_EXTERN template FCF_UNION_SHARED_EXPORT bool Union::is<const char*>() const;
-  FCF_UNION_TEMPLATE_EXTERN template FCF_UNION_SHARED_EXPORT bool Union::is<UnionVector>() const;
-  FCF_UNION_TEMPLATE_EXTERN template FCF_UNION_SHARED_EXPORT bool Union::is<UnionMap>() const;
+  FCF_UNION_DECL_TEMPLATE_EXTERN template FCF_UNION_DECL_EXPORT bool Union::is<Undefined>() const;
+  FCF_UNION_DECL_TEMPLATE_EXTERN template FCF_UNION_DECL_EXPORT bool Union::is<Null>() const;
+  FCF_UNION_DECL_TEMPLATE_EXTERN template FCF_UNION_DECL_EXPORT bool Union::is<bool>() const;
+  FCF_UNION_DECL_TEMPLATE_EXTERN template FCF_UNION_DECL_EXPORT bool Union::is<int>() const;
+  FCF_UNION_DECL_TEMPLATE_EXTERN template FCF_UNION_DECL_EXPORT bool Union::is<unsigned int>() const;
+  FCF_UNION_DECL_TEMPLATE_EXTERN template FCF_UNION_DECL_EXPORT bool Union::is<long>() const;
+  FCF_UNION_DECL_TEMPLATE_EXTERN template FCF_UNION_DECL_EXPORT bool Union::is<unsigned long>() const;
+  FCF_UNION_DECL_TEMPLATE_EXTERN template FCF_UNION_DECL_EXPORT bool Union::is<long long>() const;
+  FCF_UNION_DECL_TEMPLATE_EXTERN template FCF_UNION_DECL_EXPORT bool Union::is<unsigned long long>() const;
+  FCF_UNION_DECL_TEMPLATE_EXTERN template FCF_UNION_DECL_EXPORT bool Union::is<double>() const;
+  FCF_UNION_DECL_TEMPLATE_EXTERN template FCF_UNION_DECL_EXPORT bool Union::is<float>() const;
+  FCF_UNION_DECL_TEMPLATE_EXTERN template FCF_UNION_DECL_EXPORT bool Union::is<std::string>() const;
+  FCF_UNION_DECL_TEMPLATE_EXTERN template FCF_UNION_DECL_EXPORT bool Union::is<char*>() const;
+  FCF_UNION_DECL_TEMPLATE_EXTERN template FCF_UNION_DECL_EXPORT bool Union::is<const char*>() const;
+  FCF_UNION_DECL_TEMPLATE_EXTERN template FCF_UNION_DECL_EXPORT bool Union::is<UnionVector>() const;
+  FCF_UNION_DECL_TEMPLATE_EXTERN template FCF_UNION_DECL_EXPORT bool Union::is<UnionMap>() const;
 
   #ifdef FCF_UNION_IMPLEMENTATION
     template <typename Ty>
@@ -3385,22 +3379,22 @@ namespace fcf {
       }
     }
   #endif // #ifdef FCF_UNION_IMPLEMENTATION
-  FCF_UNION_TEMPLATE_EXTERN template FCF_UNION_SHARED_EXPORT bool Union::isCompatible<Undefined>(bool) const;
-  FCF_UNION_TEMPLATE_EXTERN template FCF_UNION_SHARED_EXPORT bool Union::isCompatible<Null>(bool) const;
-  FCF_UNION_TEMPLATE_EXTERN template FCF_UNION_SHARED_EXPORT bool Union::isCompatible<bool>(bool) const;
-  FCF_UNION_TEMPLATE_EXTERN template FCF_UNION_SHARED_EXPORT bool Union::isCompatible<int>(bool) const;
-  FCF_UNION_TEMPLATE_EXTERN template FCF_UNION_SHARED_EXPORT bool Union::isCompatible<unsigned int>(bool) const;
-  FCF_UNION_TEMPLATE_EXTERN template FCF_UNION_SHARED_EXPORT bool Union::isCompatible<long>(bool) const;
-  FCF_UNION_TEMPLATE_EXTERN template FCF_UNION_SHARED_EXPORT bool Union::isCompatible<unsigned long>(bool) const;
-  FCF_UNION_TEMPLATE_EXTERN template FCF_UNION_SHARED_EXPORT bool Union::isCompatible<long long>(bool) const;
-  FCF_UNION_TEMPLATE_EXTERN template FCF_UNION_SHARED_EXPORT bool Union::isCompatible<unsigned long long>(bool) const;
-  FCF_UNION_TEMPLATE_EXTERN template FCF_UNION_SHARED_EXPORT bool Union::isCompatible<double>(bool) const;
-  FCF_UNION_TEMPLATE_EXTERN template FCF_UNION_SHARED_EXPORT bool Union::isCompatible<float>(bool) const;
-  FCF_UNION_TEMPLATE_EXTERN template FCF_UNION_SHARED_EXPORT bool Union::isCompatible<std::string>(bool) const;
-  FCF_UNION_TEMPLATE_EXTERN template FCF_UNION_SHARED_EXPORT bool Union::isCompatible<char*>(bool) const;
-  FCF_UNION_TEMPLATE_EXTERN template FCF_UNION_SHARED_EXPORT bool Union::isCompatible<const char*>(bool) const;
-  FCF_UNION_TEMPLATE_EXTERN template FCF_UNION_SHARED_EXPORT bool Union::isCompatible<UnionVector>(bool) const;
-  FCF_UNION_TEMPLATE_EXTERN template FCF_UNION_SHARED_EXPORT bool Union::isCompatible<UnionMap>(bool) const;
+  FCF_UNION_DECL_TEMPLATE_EXTERN template FCF_UNION_DECL_EXPORT bool Union::isCompatible<Undefined>(bool) const;
+  FCF_UNION_DECL_TEMPLATE_EXTERN template FCF_UNION_DECL_EXPORT bool Union::isCompatible<Null>(bool) const;
+  FCF_UNION_DECL_TEMPLATE_EXTERN template FCF_UNION_DECL_EXPORT bool Union::isCompatible<bool>(bool) const;
+  FCF_UNION_DECL_TEMPLATE_EXTERN template FCF_UNION_DECL_EXPORT bool Union::isCompatible<int>(bool) const;
+  FCF_UNION_DECL_TEMPLATE_EXTERN template FCF_UNION_DECL_EXPORT bool Union::isCompatible<unsigned int>(bool) const;
+  FCF_UNION_DECL_TEMPLATE_EXTERN template FCF_UNION_DECL_EXPORT bool Union::isCompatible<long>(bool) const;
+  FCF_UNION_DECL_TEMPLATE_EXTERN template FCF_UNION_DECL_EXPORT bool Union::isCompatible<unsigned long>(bool) const;
+  FCF_UNION_DECL_TEMPLATE_EXTERN template FCF_UNION_DECL_EXPORT bool Union::isCompatible<long long>(bool) const;
+  FCF_UNION_DECL_TEMPLATE_EXTERN template FCF_UNION_DECL_EXPORT bool Union::isCompatible<unsigned long long>(bool) const;
+  FCF_UNION_DECL_TEMPLATE_EXTERN template FCF_UNION_DECL_EXPORT bool Union::isCompatible<double>(bool) const;
+  FCF_UNION_DECL_TEMPLATE_EXTERN template FCF_UNION_DECL_EXPORT bool Union::isCompatible<float>(bool) const;
+  FCF_UNION_DECL_TEMPLATE_EXTERN template FCF_UNION_DECL_EXPORT bool Union::isCompatible<std::string>(bool) const;
+  FCF_UNION_DECL_TEMPLATE_EXTERN template FCF_UNION_DECL_EXPORT bool Union::isCompatible<char*>(bool) const;
+  FCF_UNION_DECL_TEMPLATE_EXTERN template FCF_UNION_DECL_EXPORT bool Union::isCompatible<const char*>(bool) const;
+  FCF_UNION_DECL_TEMPLATE_EXTERN template FCF_UNION_DECL_EXPORT bool Union::isCompatible<UnionVector>(bool) const;
+  FCF_UNION_DECL_TEMPLATE_EXTERN template FCF_UNION_DECL_EXPORT bool Union::isCompatible<UnionMap>(bool) const;
 
   #ifdef FCF_UNION_IMPLEMENTATION
     void Union::parse(const std::string& a_source) {
@@ -3484,20 +3478,20 @@ namespace fcf {
     return cd.destination;
   }
   #endif // #ifdef FCF_UNION_IMPLEMENTATION
-  FCF_UNION_TEMPLATE_EXTERN template FCF_UNION_SHARED_EXPORT Undefined Union::get<Undefined>() const;
-  FCF_UNION_TEMPLATE_EXTERN template FCF_UNION_SHARED_EXPORT Null Union::get<Null>() const;
-  FCF_UNION_TEMPLATE_EXTERN template FCF_UNION_SHARED_EXPORT bool Union::get<bool>() const;
-  FCF_UNION_TEMPLATE_EXTERN template FCF_UNION_SHARED_EXPORT int Union::get<int>() const;
-  FCF_UNION_TEMPLATE_EXTERN template FCF_UNION_SHARED_EXPORT unsigned int Union::get<unsigned int>() const;
-  FCF_UNION_TEMPLATE_EXTERN template FCF_UNION_SHARED_EXPORT long Union::get<long>() const;
-  FCF_UNION_TEMPLATE_EXTERN template FCF_UNION_SHARED_EXPORT unsigned long Union::get<unsigned long>() const;
-  FCF_UNION_TEMPLATE_EXTERN template FCF_UNION_SHARED_EXPORT long long Union::get<long long>() const;
-  FCF_UNION_TEMPLATE_EXTERN template FCF_UNION_SHARED_EXPORT unsigned long long Union::get<unsigned long long>() const;
-  FCF_UNION_TEMPLATE_EXTERN template FCF_UNION_SHARED_EXPORT double Union::get<double>() const;
-  FCF_UNION_TEMPLATE_EXTERN template FCF_UNION_SHARED_EXPORT float Union::get<float>() const;
-  FCF_UNION_TEMPLATE_EXTERN template FCF_UNION_SHARED_EXPORT std::string Union::get<std::string>() const;
-  FCF_UNION_TEMPLATE_EXTERN template FCF_UNION_SHARED_EXPORT UnionVector Union::get<UnionVector>() const;
-  FCF_UNION_TEMPLATE_EXTERN template FCF_UNION_SHARED_EXPORT UnionMap Union::get<UnionMap>() const;
+  FCF_UNION_DECL_TEMPLATE_EXTERN template FCF_UNION_DECL_EXPORT Undefined Union::get<Undefined>() const;
+  FCF_UNION_DECL_TEMPLATE_EXTERN template FCF_UNION_DECL_EXPORT Null Union::get<Null>() const;
+  FCF_UNION_DECL_TEMPLATE_EXTERN template FCF_UNION_DECL_EXPORT bool Union::get<bool>() const;
+  FCF_UNION_DECL_TEMPLATE_EXTERN template FCF_UNION_DECL_EXPORT int Union::get<int>() const;
+  FCF_UNION_DECL_TEMPLATE_EXTERN template FCF_UNION_DECL_EXPORT unsigned int Union::get<unsigned int>() const;
+  FCF_UNION_DECL_TEMPLATE_EXTERN template FCF_UNION_DECL_EXPORT long Union::get<long>() const;
+  FCF_UNION_DECL_TEMPLATE_EXTERN template FCF_UNION_DECL_EXPORT unsigned long Union::get<unsigned long>() const;
+  FCF_UNION_DECL_TEMPLATE_EXTERN template FCF_UNION_DECL_EXPORT long long Union::get<long long>() const;
+  FCF_UNION_DECL_TEMPLATE_EXTERN template FCF_UNION_DECL_EXPORT unsigned long long Union::get<unsigned long long>() const;
+  FCF_UNION_DECL_TEMPLATE_EXTERN template FCF_UNION_DECL_EXPORT double Union::get<double>() const;
+  FCF_UNION_DECL_TEMPLATE_EXTERN template FCF_UNION_DECL_EXPORT float Union::get<float>() const;
+  FCF_UNION_DECL_TEMPLATE_EXTERN template FCF_UNION_DECL_EXPORT std::string Union::get<std::string>() const;
+  FCF_UNION_DECL_TEMPLATE_EXTERN template FCF_UNION_DECL_EXPORT UnionVector Union::get<UnionVector>() const;
+  FCF_UNION_DECL_TEMPLATE_EXTERN template FCF_UNION_DECL_EXPORT UnionMap Union::get<UnionMap>() const;
 
   #ifdef FCF_UNION_IMPLEMENTATION
   template <typename Ty>
@@ -3513,17 +3507,17 @@ namespace fcf {
     return Details::NUnion::Selector::select<TRef, Details::NUnion::EI_GET, far_type>(type, cd);
   }
   #endif // #ifdef FCF_UNION_IMPLEMENTATION
-  FCF_UNION_TEMPLATE_EXTERN template FCF_UNION_SHARED_EXPORT Undefined& Union::ref<Undefined>();
-  FCF_UNION_TEMPLATE_EXTERN template FCF_UNION_SHARED_EXPORT Null& Union::ref<Null>();
-  FCF_UNION_TEMPLATE_EXTERN template FCF_UNION_SHARED_EXPORT bool& Union::ref<bool>();
-  FCF_UNION_TEMPLATE_EXTERN template FCF_UNION_SHARED_EXPORT int& Union::ref<int>();
-  FCF_UNION_TEMPLATE_EXTERN template FCF_UNION_SHARED_EXPORT unsigned int& Union::ref<unsigned int>();
-  FCF_UNION_TEMPLATE_EXTERN template FCF_UNION_SHARED_EXPORT long long& Union::ref<long long>();
-  FCF_UNION_TEMPLATE_EXTERN template FCF_UNION_SHARED_EXPORT unsigned long long& Union::ref<unsigned long long>();
-  FCF_UNION_TEMPLATE_EXTERN template FCF_UNION_SHARED_EXPORT double& Union::ref<double>();
-  FCF_UNION_TEMPLATE_EXTERN template FCF_UNION_SHARED_EXPORT std::string& Union::ref<std::string>();
-  FCF_UNION_TEMPLATE_EXTERN template FCF_UNION_SHARED_EXPORT UnionVector& Union::ref<UnionVector>();
-  FCF_UNION_TEMPLATE_EXTERN template FCF_UNION_SHARED_EXPORT UnionMap& Union::ref<UnionMap>();
+  FCF_UNION_DECL_TEMPLATE_EXTERN template FCF_UNION_DECL_EXPORT Undefined& Union::ref<Undefined>();
+  FCF_UNION_DECL_TEMPLATE_EXTERN template FCF_UNION_DECL_EXPORT Null& Union::ref<Null>();
+  FCF_UNION_DECL_TEMPLATE_EXTERN template FCF_UNION_DECL_EXPORT bool& Union::ref<bool>();
+  FCF_UNION_DECL_TEMPLATE_EXTERN template FCF_UNION_DECL_EXPORT int& Union::ref<int>();
+  FCF_UNION_DECL_TEMPLATE_EXTERN template FCF_UNION_DECL_EXPORT unsigned int& Union::ref<unsigned int>();
+  FCF_UNION_DECL_TEMPLATE_EXTERN template FCF_UNION_DECL_EXPORT long long& Union::ref<long long>();
+  FCF_UNION_DECL_TEMPLATE_EXTERN template FCF_UNION_DECL_EXPORT unsigned long long& Union::ref<unsigned long long>();
+  FCF_UNION_DECL_TEMPLATE_EXTERN template FCF_UNION_DECL_EXPORT double& Union::ref<double>();
+  FCF_UNION_DECL_TEMPLATE_EXTERN template FCF_UNION_DECL_EXPORT std::string& Union::ref<std::string>();
+  FCF_UNION_DECL_TEMPLATE_EXTERN template FCF_UNION_DECL_EXPORT UnionVector& Union::ref<UnionVector>();
+  FCF_UNION_DECL_TEMPLATE_EXTERN template FCF_UNION_DECL_EXPORT UnionMap& Union::ref<UnionMap>();
 
   #ifdef FCF_UNION_IMPLEMENTATION
   template <typename Ty>
@@ -3535,21 +3529,21 @@ namespace fcf {
     Details::NUnion::Executor<fcf::Details::NUnion::EI_SET, far_type, TNOP>()(type, value, newValue);
   }
   #endif // #ifdef FCF_UNION_IMPLEMENTATION
-  FCF_UNION_TEMPLATE_EXTERN template FCF_UNION_SHARED_EXPORT void Union::set<Undefined>(const Undefined&);
-  FCF_UNION_TEMPLATE_EXTERN template FCF_UNION_SHARED_EXPORT void Union::set<Null>(const Null&);
-  FCF_UNION_TEMPLATE_EXTERN template FCF_UNION_SHARED_EXPORT void Union::set<bool>(const bool&);
-  FCF_UNION_TEMPLATE_EXTERN template FCF_UNION_SHARED_EXPORT void Union::set<int>(const int&);
-  FCF_UNION_TEMPLATE_EXTERN template FCF_UNION_SHARED_EXPORT void Union::set<unsigned int>(const unsigned int&);
-  FCF_UNION_TEMPLATE_EXTERN template FCF_UNION_SHARED_EXPORT void Union::set<long>(const long&);
-  FCF_UNION_TEMPLATE_EXTERN template FCF_UNION_SHARED_EXPORT void Union::set<unsigned long>(const unsigned long&);
-  FCF_UNION_TEMPLATE_EXTERN template FCF_UNION_SHARED_EXPORT void Union::set<long long>(const long long&);
-  FCF_UNION_TEMPLATE_EXTERN template FCF_UNION_SHARED_EXPORT void Union::set<unsigned long long>(const unsigned long long&);
-  FCF_UNION_TEMPLATE_EXTERN template FCF_UNION_SHARED_EXPORT void Union::set<double>(const double&);
-  FCF_UNION_TEMPLATE_EXTERN template FCF_UNION_SHARED_EXPORT void Union::set<std::string>(const std::string&);
-  FCF_UNION_TEMPLATE_EXTERN template FCF_UNION_SHARED_EXPORT void Union::set<ConstCharPtr>(const ConstCharPtr&);
-  FCF_UNION_TEMPLATE_EXTERN template FCF_UNION_SHARED_EXPORT void Union::set<CharPtr>(const CharPtr&);
-  FCF_UNION_TEMPLATE_EXTERN template FCF_UNION_SHARED_EXPORT void Union::set<UnionVector>(const UnionVector&);
-  FCF_UNION_TEMPLATE_EXTERN template FCF_UNION_SHARED_EXPORT void Union::set<UnionMap>(const UnionMap&);
+  FCF_UNION_DECL_TEMPLATE_EXTERN template FCF_UNION_DECL_EXPORT void Union::set<Undefined>(const Undefined&);
+  FCF_UNION_DECL_TEMPLATE_EXTERN template FCF_UNION_DECL_EXPORT void Union::set<Null>(const Null&);
+  FCF_UNION_DECL_TEMPLATE_EXTERN template FCF_UNION_DECL_EXPORT void Union::set<bool>(const bool&);
+  FCF_UNION_DECL_TEMPLATE_EXTERN template FCF_UNION_DECL_EXPORT void Union::set<int>(const int&);
+  FCF_UNION_DECL_TEMPLATE_EXTERN template FCF_UNION_DECL_EXPORT void Union::set<unsigned int>(const unsigned int&);
+  FCF_UNION_DECL_TEMPLATE_EXTERN template FCF_UNION_DECL_EXPORT void Union::set<long>(const long&);
+  FCF_UNION_DECL_TEMPLATE_EXTERN template FCF_UNION_DECL_EXPORT void Union::set<unsigned long>(const unsigned long&);
+  FCF_UNION_DECL_TEMPLATE_EXTERN template FCF_UNION_DECL_EXPORT void Union::set<long long>(const long long&);
+  FCF_UNION_DECL_TEMPLATE_EXTERN template FCF_UNION_DECL_EXPORT void Union::set<unsigned long long>(const unsigned long long&);
+  FCF_UNION_DECL_TEMPLATE_EXTERN template FCF_UNION_DECL_EXPORT void Union::set<double>(const double&);
+  FCF_UNION_DECL_TEMPLATE_EXTERN template FCF_UNION_DECL_EXPORT void Union::set<std::string>(const std::string&);
+  FCF_UNION_DECL_TEMPLATE_EXTERN template FCF_UNION_DECL_EXPORT void Union::set<ConstCharPtr>(const ConstCharPtr&);
+  FCF_UNION_DECL_TEMPLATE_EXTERN template FCF_UNION_DECL_EXPORT void Union::set<CharPtr>(const CharPtr&);
+  FCF_UNION_DECL_TEMPLATE_EXTERN template FCF_UNION_DECL_EXPORT void Union::set<UnionVector>(const UnionVector&);
+  FCF_UNION_DECL_TEMPLATE_EXTERN template FCF_UNION_DECL_EXPORT void Union::set<UnionMap>(const UnionMap&);
 
   #ifdef FCF_UNION_IMPLEMENTATION
     void Union::set(const Union& a_union){
@@ -3580,21 +3574,21 @@ namespace fcf {
       Details::NUnion::Executor<fcf::Details::NUnion::EI_SET, far_type, TNOP>()(type, value, Details::NUnion::TypeHelper<far_type>::init());
     }
   #endif // #ifdef FCF_UNION_IMPLEMENTATION
-  FCF_UNION_TEMPLATE_EXTERN template FCF_UNION_SHARED_EXPORT void Union::set<Undefined>();
-  FCF_UNION_TEMPLATE_EXTERN template FCF_UNION_SHARED_EXPORT  void Union::set<Null>();
-  FCF_UNION_TEMPLATE_EXTERN template FCF_UNION_SHARED_EXPORT void Union::set<bool>();
-  FCF_UNION_TEMPLATE_EXTERN template FCF_UNION_SHARED_EXPORT  void Union::set<int>();
-  FCF_UNION_TEMPLATE_EXTERN template FCF_UNION_SHARED_EXPORT  void Union::set<unsigned int>();
-  FCF_UNION_TEMPLATE_EXTERN template FCF_UNION_SHARED_EXPORT void Union::set<long>();
-  FCF_UNION_TEMPLATE_EXTERN template FCF_UNION_SHARED_EXPORT  void Union::set<unsigned long>();
-  FCF_UNION_TEMPLATE_EXTERN template FCF_UNION_SHARED_EXPORT void Union::set<long long>();
-  FCF_UNION_TEMPLATE_EXTERN template FCF_UNION_SHARED_EXPORT void Union::set<unsigned long long>();
-  FCF_UNION_TEMPLATE_EXTERN template FCF_UNION_SHARED_EXPORT void Union::set<double>();
-  FCF_UNION_TEMPLATE_EXTERN template FCF_UNION_SHARED_EXPORT  void Union::set<std::string>();
-  FCF_UNION_TEMPLATE_EXTERN template FCF_UNION_SHARED_EXPORT  void Union::set<ConstCharPtr>();
-  FCF_UNION_TEMPLATE_EXTERN template FCF_UNION_SHARED_EXPORT void Union::set<CharPtr>();
-  FCF_UNION_TEMPLATE_EXTERN template FCF_UNION_SHARED_EXPORT  void Union::set<UnionVector>();
-  FCF_UNION_TEMPLATE_EXTERN template FCF_UNION_SHARED_EXPORT void Union::set<UnionMap>();
+  FCF_UNION_DECL_TEMPLATE_EXTERN template FCF_UNION_DECL_EXPORT void Union::set<Undefined>();
+  FCF_UNION_DECL_TEMPLATE_EXTERN template FCF_UNION_DECL_EXPORT  void Union::set<Null>();
+  FCF_UNION_DECL_TEMPLATE_EXTERN template FCF_UNION_DECL_EXPORT void Union::set<bool>();
+  FCF_UNION_DECL_TEMPLATE_EXTERN template FCF_UNION_DECL_EXPORT  void Union::set<int>();
+  FCF_UNION_DECL_TEMPLATE_EXTERN template FCF_UNION_DECL_EXPORT  void Union::set<unsigned int>();
+  FCF_UNION_DECL_TEMPLATE_EXTERN template FCF_UNION_DECL_EXPORT void Union::set<long>();
+  FCF_UNION_DECL_TEMPLATE_EXTERN template FCF_UNION_DECL_EXPORT  void Union::set<unsigned long>();
+  FCF_UNION_DECL_TEMPLATE_EXTERN template FCF_UNION_DECL_EXPORT void Union::set<long long>();
+  FCF_UNION_DECL_TEMPLATE_EXTERN template FCF_UNION_DECL_EXPORT void Union::set<unsigned long long>();
+  FCF_UNION_DECL_TEMPLATE_EXTERN template FCF_UNION_DECL_EXPORT void Union::set<double>();
+  FCF_UNION_DECL_TEMPLATE_EXTERN template FCF_UNION_DECL_EXPORT  void Union::set<std::string>();
+  FCF_UNION_DECL_TEMPLATE_EXTERN template FCF_UNION_DECL_EXPORT  void Union::set<ConstCharPtr>();
+  FCF_UNION_DECL_TEMPLATE_EXTERN template FCF_UNION_DECL_EXPORT void Union::set<CharPtr>();
+  FCF_UNION_DECL_TEMPLATE_EXTERN template FCF_UNION_DECL_EXPORT  void Union::set<UnionVector>();
+  FCF_UNION_DECL_TEMPLATE_EXTERN template FCF_UNION_DECL_EXPORT void Union::set<UnionMap>();
 
   #ifdef FCF_UNION_IMPLEMENTATION
     template <typename Ty>
@@ -3608,21 +3602,21 @@ namespace fcf {
       return Details::NUnion::Selector::select<bool, Details::NUnion::EI_EQUAL, TNOP>(type, cd);
     }
   #endif // #ifdef FCF_UNION_IMPLEMENTATION
-  FCF_UNION_TEMPLATE_EXTERN template FCF_UNION_SHARED_EXPORT bool Union::equal<Undefined>(const Undefined&, bool) const;
-  FCF_UNION_TEMPLATE_EXTERN template FCF_UNION_SHARED_EXPORT bool Union::equal<Null>(const Null&, bool) const;
-  FCF_UNION_TEMPLATE_EXTERN template FCF_UNION_SHARED_EXPORT bool Union::equal<bool>(const bool&, bool) const;
-  FCF_UNION_TEMPLATE_EXTERN template FCF_UNION_SHARED_EXPORT bool Union::equal<int>(const int&, bool) const;
-  FCF_UNION_TEMPLATE_EXTERN template FCF_UNION_SHARED_EXPORT bool Union::equal<unsigned int>(const unsigned int&, bool) const;
-  FCF_UNION_TEMPLATE_EXTERN template FCF_UNION_SHARED_EXPORT bool Union::equal<long>(const long&, bool) const;
-  FCF_UNION_TEMPLATE_EXTERN template FCF_UNION_SHARED_EXPORT bool Union::equal<unsigned long>(const unsigned long&, bool) const;
-  FCF_UNION_TEMPLATE_EXTERN template FCF_UNION_SHARED_EXPORT bool Union::equal<long long>(const long long&, bool) const;
-  FCF_UNION_TEMPLATE_EXTERN template FCF_UNION_SHARED_EXPORT bool Union::equal<unsigned long long>(const unsigned long long&, bool) const;
-  FCF_UNION_TEMPLATE_EXTERN template FCF_UNION_SHARED_EXPORT bool Union::equal<double>(const double&, bool) const;
-  FCF_UNION_TEMPLATE_EXTERN template FCF_UNION_SHARED_EXPORT  bool Union::equal<std::string>(const std::string&, bool) const;
-  FCF_UNION_TEMPLATE_EXTERN template FCF_UNION_SHARED_EXPORT bool Union::equal<ConstCharPtr>(const ConstCharPtr&, bool) const;
-  FCF_UNION_TEMPLATE_EXTERN template FCF_UNION_SHARED_EXPORT bool Union::equal<CharPtr>(const CharPtr&, bool) const;
-  FCF_UNION_TEMPLATE_EXTERN template FCF_UNION_SHARED_EXPORT bool Union::equal<UnionVector>(const UnionVector&, bool) const;
-  FCF_UNION_TEMPLATE_EXTERN template FCF_UNION_SHARED_EXPORT bool Union::equal<UnionMap>(const UnionMap&, bool) const;
+  FCF_UNION_DECL_TEMPLATE_EXTERN template FCF_UNION_DECL_EXPORT bool Union::equal<Undefined>(const Undefined&, bool) const;
+  FCF_UNION_DECL_TEMPLATE_EXTERN template FCF_UNION_DECL_EXPORT bool Union::equal<Null>(const Null&, bool) const;
+  FCF_UNION_DECL_TEMPLATE_EXTERN template FCF_UNION_DECL_EXPORT bool Union::equal<bool>(const bool&, bool) const;
+  FCF_UNION_DECL_TEMPLATE_EXTERN template FCF_UNION_DECL_EXPORT bool Union::equal<int>(const int&, bool) const;
+  FCF_UNION_DECL_TEMPLATE_EXTERN template FCF_UNION_DECL_EXPORT bool Union::equal<unsigned int>(const unsigned int&, bool) const;
+  FCF_UNION_DECL_TEMPLATE_EXTERN template FCF_UNION_DECL_EXPORT bool Union::equal<long>(const long&, bool) const;
+  FCF_UNION_DECL_TEMPLATE_EXTERN template FCF_UNION_DECL_EXPORT bool Union::equal<unsigned long>(const unsigned long&, bool) const;
+  FCF_UNION_DECL_TEMPLATE_EXTERN template FCF_UNION_DECL_EXPORT bool Union::equal<long long>(const long long&, bool) const;
+  FCF_UNION_DECL_TEMPLATE_EXTERN template FCF_UNION_DECL_EXPORT bool Union::equal<unsigned long long>(const unsigned long long&, bool) const;
+  FCF_UNION_DECL_TEMPLATE_EXTERN template FCF_UNION_DECL_EXPORT bool Union::equal<double>(const double&, bool) const;
+  FCF_UNION_DECL_TEMPLATE_EXTERN template FCF_UNION_DECL_EXPORT  bool Union::equal<std::string>(const std::string&, bool) const;
+  FCF_UNION_DECL_TEMPLATE_EXTERN template FCF_UNION_DECL_EXPORT bool Union::equal<ConstCharPtr>(const ConstCharPtr&, bool) const;
+  FCF_UNION_DECL_TEMPLATE_EXTERN template FCF_UNION_DECL_EXPORT bool Union::equal<CharPtr>(const CharPtr&, bool) const;
+  FCF_UNION_DECL_TEMPLATE_EXTERN template FCF_UNION_DECL_EXPORT bool Union::equal<UnionVector>(const UnionVector&, bool) const;
+  FCF_UNION_DECL_TEMPLATE_EXTERN template FCF_UNION_DECL_EXPORT bool Union::equal<UnionMap>(const UnionMap&, bool) const;
 
   #ifdef FCF_UNION_IMPLEMENTATION
     bool Union::equal(const Union& a_value, bool a_strict) const {
@@ -3648,21 +3642,21 @@ namespace fcf {
     return Details::NUnion::Selector::select<bool, Details::NUnion::EI_LESS, TNOP>(type, cd);
   }
   #endif // #ifdef FCF_UNION_IMPLEMENTATION
-  FCF_UNION_TEMPLATE_EXTERN template FCF_UNION_SHARED_EXPORT bool Union::lessStr<Undefined>(const Undefined&) const;
-  FCF_UNION_TEMPLATE_EXTERN template FCF_UNION_SHARED_EXPORT bool Union::lessStr<Null>(const Null&) const;
-  FCF_UNION_TEMPLATE_EXTERN template FCF_UNION_SHARED_EXPORT bool Union::lessStr<bool>(const bool&) const;
-  FCF_UNION_TEMPLATE_EXTERN template FCF_UNION_SHARED_EXPORT bool Union::lessStr<int>(const int&) const;
-  FCF_UNION_TEMPLATE_EXTERN template FCF_UNION_SHARED_EXPORT bool Union::lessStr<unsigned int>(const unsigned int&) const;
-  FCF_UNION_TEMPLATE_EXTERN template FCF_UNION_SHARED_EXPORT bool Union::lessStr<long>(const long&) const;
-  FCF_UNION_TEMPLATE_EXTERN template FCF_UNION_SHARED_EXPORT bool Union::lessStr<unsigned long>(const unsigned long&) const;
-  FCF_UNION_TEMPLATE_EXTERN template FCF_UNION_SHARED_EXPORT bool Union::lessStr<long long>(const long long&) const;
-  FCF_UNION_TEMPLATE_EXTERN template FCF_UNION_SHARED_EXPORT bool Union::lessStr<unsigned long long>(const unsigned long long&) const;
-  FCF_UNION_TEMPLATE_EXTERN template FCF_UNION_SHARED_EXPORT bool Union::lessStr<double>(const double&) const;
-  FCF_UNION_TEMPLATE_EXTERN template FCF_UNION_SHARED_EXPORT bool Union::lessStr<std::string>(const std::string&) const;
-  FCF_UNION_TEMPLATE_EXTERN template FCF_UNION_SHARED_EXPORT bool Union::lessStr<ConstCharPtr>(const ConstCharPtr&) const;
-  FCF_UNION_TEMPLATE_EXTERN template FCF_UNION_SHARED_EXPORT bool Union::lessStr<CharPtr>(const CharPtr&) const;
-  FCF_UNION_TEMPLATE_EXTERN template FCF_UNION_SHARED_EXPORT bool Union::lessStr<UnionVector>(const UnionVector&) const;
-  FCF_UNION_TEMPLATE_EXTERN template FCF_UNION_SHARED_EXPORT bool Union::lessStr<UnionMap>(const UnionMap&) const;
+  FCF_UNION_DECL_TEMPLATE_EXTERN template FCF_UNION_DECL_EXPORT bool Union::lessStr<Undefined>(const Undefined&) const;
+  FCF_UNION_DECL_TEMPLATE_EXTERN template FCF_UNION_DECL_EXPORT bool Union::lessStr<Null>(const Null&) const;
+  FCF_UNION_DECL_TEMPLATE_EXTERN template FCF_UNION_DECL_EXPORT bool Union::lessStr<bool>(const bool&) const;
+  FCF_UNION_DECL_TEMPLATE_EXTERN template FCF_UNION_DECL_EXPORT bool Union::lessStr<int>(const int&) const;
+  FCF_UNION_DECL_TEMPLATE_EXTERN template FCF_UNION_DECL_EXPORT bool Union::lessStr<unsigned int>(const unsigned int&) const;
+  FCF_UNION_DECL_TEMPLATE_EXTERN template FCF_UNION_DECL_EXPORT bool Union::lessStr<long>(const long&) const;
+  FCF_UNION_DECL_TEMPLATE_EXTERN template FCF_UNION_DECL_EXPORT bool Union::lessStr<unsigned long>(const unsigned long&) const;
+  FCF_UNION_DECL_TEMPLATE_EXTERN template FCF_UNION_DECL_EXPORT bool Union::lessStr<long long>(const long long&) const;
+  FCF_UNION_DECL_TEMPLATE_EXTERN template FCF_UNION_DECL_EXPORT bool Union::lessStr<unsigned long long>(const unsigned long long&) const;
+  FCF_UNION_DECL_TEMPLATE_EXTERN template FCF_UNION_DECL_EXPORT bool Union::lessStr<double>(const double&) const;
+  FCF_UNION_DECL_TEMPLATE_EXTERN template FCF_UNION_DECL_EXPORT bool Union::lessStr<std::string>(const std::string&) const;
+  FCF_UNION_DECL_TEMPLATE_EXTERN template FCF_UNION_DECL_EXPORT bool Union::lessStr<ConstCharPtr>(const ConstCharPtr&) const;
+  FCF_UNION_DECL_TEMPLATE_EXTERN template FCF_UNION_DECL_EXPORT bool Union::lessStr<CharPtr>(const CharPtr&) const;
+  FCF_UNION_DECL_TEMPLATE_EXTERN template FCF_UNION_DECL_EXPORT bool Union::lessStr<UnionVector>(const UnionVector&) const;
+  FCF_UNION_DECL_TEMPLATE_EXTERN template FCF_UNION_DECL_EXPORT bool Union::lessStr<UnionMap>(const UnionMap&) const;
 
   #ifdef FCF_UNION_IMPLEMENTATION
     bool Union::lessStr(Union& a_value) const {

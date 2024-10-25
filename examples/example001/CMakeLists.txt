@@ -1,0 +1,9 @@
+cmake_minimum_required(VERSION 3.0)
+project(example001)
+
+set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
+
+include_directories(SYSTEM ${CMAKE_SOURCE_DIR}/../../../)
+add_executable(example001 main.cpp)
