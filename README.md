@@ -187,37 +187,13 @@ add_executable(exemple002 unionImpl.cpp main.cpp)
 <a name="creating_shared_library"></a>
 ### Creating a shared library with the Union class
 
-Вы также можете создать разделяемую библиотеку DLL/SO, которая будет экспортировать класс `fcf::Union`.
+You can also create a shared DLL/SO that exports the `fcf::Union` class.
 
-1. Для этого в проекте разделяемой библиотеки должен быть объявлем макрос `FCF_UNION_EXPORT`
-2. В библиотеке должна быть объявлена реализация `fcf::Union` (Должен быть подключен заголовок union.hpp с объявленным макросом `FCF_UNION_IMPLEMENTATION`).
-3. В каждом проекте в котором подключена библиотека экспортируая `fcf::Union` должен быть объявелен макрос `FCF_UNION_IMPORT`
+1. To do this, the shared library project must declare the macro `FCF_UNION_EXPORT`
+2. The library must declare an implementation of `fcf::Union` (The header union.hpp with the declared macro `FCF_UNION_IMPLEMENTATION` must be included).
+3. In each project in which the library is connected, the macro FCF_UNION_IMPORT must be declared.
 
-Ниже представлен простой пример экспорта и импорта класса fcf::Union
-
-**executable/main.cpp file**
-```c++
-#include <fcfUnion/union.hpp>
-#include <iostream>
-#include <fstream>
-
-int main(int a_argc, char* a_argv[]){
-  std::ifstream ifs("config.json");
-  fcf::Union u;
-  u.parse(ifs);
-
-  if (u == fcf::undefined) {
-    std::cerr << "ERROR: Failed to read configuration file" << std::endl;
-    return 1;
-  }
-
-  std::cout << "  The file contains a JSON object: " << u.is<fcf::UnionMap>() << std::endl;
-  std::cout << "    Fields: " << std::endl;
-  std::cout << "      [param1]: " << u["param1"] << std::endl;
-  return 0;
-}
-```
-
+Below is a simple example of exporting and importing the fcf::Union class.
 
 **executable/main.cpp file**
 ```c++
@@ -244,6 +220,9 @@ int main(int a_argc, char* a_argv[]){
 ```
 
 **CMakeLists.txt file**
+
+In the project parameters, we declare the macros `FCF_UNION_IMPORT` and `FCF_UNION_EXPORT`
+
 ```
 cmake_minimum_required(VERSION 3.0)
 project(example003)
