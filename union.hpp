@@ -59,11 +59,11 @@
 namespace fcf {
 
   #ifndef FCF_THROW_OR_RESULT_ERROR
-    #define FCF_THROW_OR_RESULT_ERROR(a_dstError, a_errorMessage) \
+    #define FCF_THROW_OR_RESULT_ERROR(a_dstError, a_errorMessage, a_resolver, a_ignoreFirst) \
       if (a_dstError) { \
         *a_dstError = a_errorMessage; \
       } else { \
-        throw std::runtime_error(a_errorMessage); \
+        throw UnionException(a_errorMessage, a_resolver.line(), a_resolver.column(), a_ignoreFirst); \
       }
   #endif
 
@@ -168,6 +168,42 @@ namespace fcf {
     char      vstring[sizeof(std::string)];
     char      vvector[sizeof(UnionVector)];
     char      vmap[sizeof(UnionMap)];
+  };
+
+  class FCF_UNION_DECL_EXPORT UnionException : public std::runtime_error {
+    public:
+      inline UnionException(const char* a_message)
+        : runtime_error(a_message)
+        , _line(SIZE_MAX)
+        , _column(SIZE_MAX) {
+      }
+
+      inline UnionException(const char* a_message, size_t a_line, size_t a_col)
+        : runtime_error(_tostr(a_message, a_line, a_col))
+        , _line(a_line)
+        , _column(a_col) {
+      }
+      inline UnionException(const char* a_message, size_t a_line, size_t a_col, bool a_ignoreFirst)
+        : runtime_error(_tostr(a_message,  a_ignoreFirst && a_line == 1 && a_col == 1 ? SIZE_MAX : a_line, a_ignoreFirst && a_line == 1 && a_col == 1 ? SIZE_MAX : a_col))
+        , _line(a_ignoreFirst && a_line == 1 && a_col == 1 ?  SIZE_MAX: a_line)
+        , _column(a_ignoreFirst && a_line == 1 && a_col == 1 ?  SIZE_MAX: a_col) {
+      }
+      inline size_t line() const{
+        return _line;
+      }
+      inline size_t column() const {
+        return _column;
+      }
+      inline std::string swhat() const {
+        std::string w = what();
+        const char* p = strstr(w.c_str(), " [");
+        return std::string(p ? w.substr(0, p - w.c_str()) : w);
+      }
+
+    protected:
+      FCF_UNION_DECL_EXPORT static std::string _tostr(const char* a_message, size_t a_line, size_t a_col);
+      size_t      _line;
+      size_t      _column;
   };
 
   struct Union {
@@ -357,12 +393,21 @@ namespace fcf {
         struct FCF_UNION_DECL_VISIBILITY_HIDDEN ConstResolver {
           typedef Ty item_type;
           typedef Ty value_type;
-          ConstResolver(const value_type& a_ref)
+          ConstResolver(const value_type& a_ref, bool a_enableLineCounter = false)
             : _ref(a_ref) {
           }
           inline const value_type& operator()(){
             return _ref;
           }
+
+          size_t line() {
+            return SIZE_MAX;
+          }
+
+          size_t column() {
+            return SIZE_MAX;
+          }
+
           const Ty& _ref;
         };
 
@@ -372,7 +417,7 @@ namespace fcf {
           typedef std::string value_type;
 
           template <typename Ty>
-          SimpleConstResolver(Ty& a_ref)
+          SimpleConstResolver(Ty& a_ref, bool a_enableLineCounter = false)
             : _ref((TString&)a_ref)
             , _index(0){
           }
@@ -393,6 +438,13 @@ namespace fcf {
             return !_ref[_index];
           }
 
+          size_t line() {
+            return SIZE_MAX;
+          }
+
+          size_t column() {
+            return SIZE_MAX;
+          }
 
           TString&  _ref;
           size_t    _index;
@@ -404,7 +456,7 @@ namespace fcf {
           typedef char item_type;
           typedef std::basic_istream<char> value_type;
 
-          SimpleConstResolver(std::basic_istream<char>& a_ref)
+          SimpleConstResolver(std::basic_istream<char>& a_ref, bool a_enableLineCounter = false)
             : _ref(a_ref) {
             _ch = _ref.get();
           }
@@ -425,123 +477,157 @@ namespace fcf {
             return _ref.eof() || _ref.fail();
           }
 
+          size_t line() {
+            return SIZE_MAX;
+          }
+
+          size_t column() {
+            return SIZE_MAX;
+          }
+
           std::basic_istream<char>&  _ref;
           item_type                  _ch;
         };
 
         template <typename Ty>
         struct FCF_UNION_DECL_VISIBILITY_HIDDEN ConstUncommentResolver {
-          typedef Ty resolver_type;
-          typedef typename resolver_type::item_type item_type;
-          typedef typename resolver_type::value_type value_type;
+          public:
+            typedef Ty resolver_type;
+            typedef typename resolver_type::item_type item_type;
+            typedef typename resolver_type::value_type value_type;
 
-          template <typename TRef>
-          ConstUncommentResolver(TRef& a_ref)
-             : _resolver((TRef&)a_ref), _q(0), _n1(-1), _n2(-1), _nb1(-1), _s(0) {
-          }
-
-          inline const value_type& operator()(){
-            return _resolver.operator()();
-          }
-
-          inline item_type read() {
-            if (_n1 != -1) {
-              return _n1;
+            template <typename TRef>
+            ConstUncommentResolver(TRef& a_ref, bool a_enableLineCounter = false)
+               : _resolver((TRef&)a_ref), _q(0), _n1(-1), _n2(-1), _nb1(-1), _s(0), _l(a_enableLineCounter ? 1 : SIZE_MAX), _c(a_enableLineCounter ? 1: SIZE_MAX) {
             }
-            return _resolver.read();
-          }
 
-          void next() {
-           if (_n1 != -1){
-              _n1 = -1;
-              return;
+            inline const value_type& operator()(){
+              return _resolver.operator()();
             }
-           char c;
-            while(!_resolver.end()) {
+
+            inline item_type read() {
+              if (_n1 != -1) {
+                return _n1;
+              }
+              return _resolver.read();
+            }
+
+            void next() {
+             if (_n1 != -1){
+                _n1 = -1;
+                return;
+              }
+             char c;
+              while(!_resolver.end()) {
+                _next();
+                if (_resolver.end()){
+                  break;
+                }
+                c = _resolver.read();
+                if (!_q) {
+                  if (_n1 == '/' && _n2 == '/') {
+                    if (c == '\n') {
+                      _n1 = -1;
+                      _n2 = -1;
+                      _nb1 = -1;
+                      continue;
+                    } else {
+                      continue;
+                    }
+                  }
+                  if (_n1 == '/' && _n2 == '*') {
+                    if (_nb1 == '*' && c == '/' ) {
+                      _n1 = -1;
+                      _n2 = -1;
+                      _nb1 = -1;
+                      continue;
+                    } else if (c == '*') {
+                      _nb1 = c;
+                      continue;
+                    } else {
+                      _nb1 = -1;
+                      continue;
+                    }
+                  }
+                  if (c == '/' && _n1 == '/'){
+                    _n2 = c;
+                    continue;
+                  }
+                  if (c == '*' && _n1 == '/'){
+                    _n2 = c;
+                    continue;
+                  }
+                  if (c == '/' && _n1 == -1){
+                    _n1 = c;
+                    continue;
+                  }
+                  break;
+                } else {
+                  break;
+                }
+              }
+              if (_resolver.end() && _n1 != -1){
+                _n1 = -1;
+                _n2 = -1;
+                _nb1 = -1;
+              }
+              if (!_resolver.end()) {
+                if (_q) {
+                  if (c == '\\') {
+                    ++_s;
+                  }
+                  if (c == _q && (_s % 2) == 0) {
+                    _q = 0;
+                  }
+                  if (c != '\\') {
+                    _s = 0;
+                  }
+                } else {
+                  if (c == '\'' || c == '\"') {
+                    _q = c;
+                  }
+                }
+              }
+            }
+
+            inline bool end() {
+              if (_n1 != -1){
+                return false;
+              }
+              return _resolver.end();
+            }
+
+            size_t line() {
+              return _l;
+            }
+
+            size_t column() {
+              return _c;
+            }
+
+          protected:
+
+            void _next() {
+              if (_l != SIZE_MAX) {
+                const char c = _resolver.read();
+                if (c == '\n'){
+                  ++_l;
+                  _c = 1;
+                } else {
+                  ++_c;
+                }
+              }
               _resolver.next();
-              if (_resolver.end()){
-                break;
-              }
-              c = _resolver.read();
-              if (!_q) {
-                if (_n1 == '/' && _n2 == '/') {
-                  if (c == '\n') {
-                    _n1 = -1;
-                    _n2 = -1;
-                    _nb1 = -1;
-                    continue;
-                  } else {
-                    continue;
-                  }
-                }
-                if (_n1 == '/' && _n2 == '*') {
-                  if (_nb1 == '*' && c == '/' ) {
-                    _n1 = -1;
-                    _n2 = -1;
-                    _nb1 = -1;
-                    continue;
-                  } else if (c == '*') {
-                    _nb1 = c;
-                    continue;
-                  } else {
-                    _nb1 = -1;
-                    continue;
-                  }
-                }
-                if (c == '/' && _n1 == '/'){
-                  _n2 = c;
-                  continue;
-                }
-                if (c == '*' && _n1 == '/'){
-                  _n2 = c;
-                  continue;
-                }
-                if (c == '/' && _n1 == -1){
-                  _n1 = c;
-                  continue;
-                }
-                break;
-              } else {
-                break;
-              }
             }
-            if (_resolver.end() && _n1 != -1){
-              _n1 = -1;
-              _n2 = -1;
-              _nb1 = -1;
-            }
-            if (!_resolver.end()) {
-              if (_q) {
-                if (c == '\\') {
-                  ++_s;
-                }
-                if (c == _q && (_s % 2) == 0) {
-                  _q = 0;
-                }
-                if (c != '\\') {
-                  _s = 0;
-                }
-              } else {
-                if (c == '\'' || c == '\"') {
-                  _q = c;
-                }
-              }
-            }
-          }
 
-          inline bool end() {
-            if (_n1 != -1){
-              return false;
-            }
-            return _resolver.end();
-          }
-
-          resolver_type _resolver;
-          char          _q;
-          int           _n1;
-          int           _n2;
-          int           _nb1;
-          size_t        _s;
+            resolver_type _resolver;
+            char          _q;
+            int           _n1;
+            int           _n2;
+            int           _nb1;
+            size_t        _s;
+            size_t        _l;
+            size_t        _c;
         };
 
         template <>
@@ -684,7 +770,7 @@ namespace fcf {
         struct FCF_UNION_DECL_VISIBILITY_HIDDEN Converter<int, UnionVector, TNOP>{
           template <typename TResolver, typename TReceiver>
           inline void operator()(TResolver& a_resolver, TReceiver& a_receiver, bool a_inner, const char** a_dstErrorMessage) {
-            FCF_THROW_OR_RESULT_ERROR(a_dstErrorMessage, "Incorrect vector value");
+            FCF_THROW_OR_RESULT_ERROR(a_dstErrorMessage, "Incorrect vector value", a_resolver, false);
           }
         };
 
@@ -692,7 +778,7 @@ namespace fcf {
         struct FCF_UNION_DECL_VISIBILITY_HIDDEN Converter<int, UnionMap, TNOP>{
           template <typename TResolver, typename TReceiver>
           inline void operator()(TResolver& a_resolver, TReceiver& a_receiver, bool a_inner, const char** a_dstErrorMessage) {
-            FCF_THROW_OR_RESULT_ERROR(a_dstErrorMessage, "Incorrect map value");
+            FCF_THROW_OR_RESULT_ERROR(a_dstErrorMessage, "Incorrect map value", a_resolver, false);
           }
         };
 
@@ -711,7 +797,7 @@ namespace fcf {
         struct FCF_UNION_DECL_VISIBILITY_HIDDEN Converter<unsigned int, UnionVector, TNOP>{
           template <typename TResolver, typename TReceiver>
           inline void operator()(TResolver& a_resolver, TReceiver& a_receiver, bool a_inner, const char** a_dstErrorMessage) {
-            FCF_THROW_OR_RESULT_ERROR(a_dstErrorMessage, "Incorrect vector value");
+            FCF_THROW_OR_RESULT_ERROR(a_dstErrorMessage, "Incorrect vector value", a_resolver, false);
           }
         };
 
@@ -719,7 +805,7 @@ namespace fcf {
         struct FCF_UNION_DECL_VISIBILITY_HIDDEN Converter<unsigned int, UnionMap, TNOP>{
           template <typename TResolver, typename TReceiver>
           inline void operator()(TResolver& a_resolver, TReceiver& a_receiver, bool a_inner, const char** a_dstErrorMessage) {
-            FCF_THROW_OR_RESULT_ERROR(a_dstErrorMessage, "Incorrect map value");
+            FCF_THROW_OR_RESULT_ERROR(a_dstErrorMessage, "Incorrect map value", a_resolver, false);
           }
         };
 
@@ -739,7 +825,7 @@ namespace fcf {
         struct FCF_UNION_DECL_VISIBILITY_HIDDEN Converter<long long, UnionVector, TNOP>{
           template <typename TResolver, typename TReceiver>
           inline void operator()(TResolver& a_resolver, TReceiver& a_receiver, bool a_inner, const char** a_dstErrorMessage) {
-            FCF_THROW_OR_RESULT_ERROR(a_dstErrorMessage, "Incorrect vector value");
+            FCF_THROW_OR_RESULT_ERROR(a_dstErrorMessage, "Incorrect vector value", a_resolver, false);
           }
         };
 
@@ -747,7 +833,7 @@ namespace fcf {
         struct FCF_UNION_DECL_VISIBILITY_HIDDEN Converter<long long, UnionMap, TNOP>{
           template <typename TResolver, typename TReceiver>
           inline void operator()(TResolver& a_resolver, TReceiver& a_receiver, bool a_inner, const char** a_dstErrorMessage) {
-            FCF_THROW_OR_RESULT_ERROR(a_dstErrorMessage, "Incorrect map value");
+            FCF_THROW_OR_RESULT_ERROR(a_dstErrorMessage, "Incorrect map value", a_resolver, false);
           }
         };
 
@@ -766,7 +852,7 @@ namespace fcf {
         struct FCF_UNION_DECL_VISIBILITY_HIDDEN Converter<unsigned long long, UnionVector, TNOP>{
           template <typename TResolver, typename TReceiver>
           inline void operator()(TResolver& a_resolver, TReceiver& a_receiver, bool a_inner, const char** a_dstErrorMessage) {
-            FCF_THROW_OR_RESULT_ERROR(a_dstErrorMessage, "Incorrect vector value");
+            FCF_THROW_OR_RESULT_ERROR(a_dstErrorMessage, "Incorrect vector value", a_resolver, false);
           }
         };
 
@@ -774,7 +860,7 @@ namespace fcf {
         struct FCF_UNION_DECL_VISIBILITY_HIDDEN Converter<unsigned long long, UnionMap, TNOP>{
           template <typename TResolver, typename TReceiver>
           inline void operator()(TResolver& a_resolver, TReceiver& a_receiver, bool a_inner, const char** a_dstErrorMessage) {
-            FCF_THROW_OR_RESULT_ERROR(a_dstErrorMessage, "Incorrect map value");
+            FCF_THROW_OR_RESULT_ERROR(a_dstErrorMessage, "Incorrect map value", a_resolver, false);
           }
         };
 
@@ -793,7 +879,7 @@ namespace fcf {
         struct FCF_UNION_DECL_VISIBILITY_HIDDEN Converter<double, UnionVector, TNOP>{
           template <typename TResolver, typename TReceiver>
           inline void operator()(TResolver& a_resolver, TReceiver& a_receiver, bool a_inner, const char** a_dstErrorMessage) {
-            FCF_THROW_OR_RESULT_ERROR(a_dstErrorMessage, "Incorrect vector value");
+            FCF_THROW_OR_RESULT_ERROR(a_dstErrorMessage, "Incorrect vector value", a_resolver, false);
           }
         };
 
@@ -801,7 +887,7 @@ namespace fcf {
         struct FCF_UNION_DECL_VISIBILITY_HIDDEN Converter<double, UnionMap, TNOP>{
           template <typename TResolver, typename TReceiver>
           inline void operator()(TResolver& a_resolver, TReceiver& a_receiver, bool a_inner, const char** a_dstErrorMessage) {
-            FCF_THROW_OR_RESULT_ERROR(a_dstErrorMessage, "Incorrect map value");
+            FCF_THROW_OR_RESULT_ERROR(a_dstErrorMessage, "Incorrect map value", a_resolver, false);
           }
         };
 
@@ -860,7 +946,7 @@ namespace fcf {
         struct FCF_UNION_DECL_VISIBILITY_HIDDEN Converter<bool, UnionVector, TNOP>{
           template <typename TResolver, typename TReceiver>
           inline void operator()(TResolver& a_resolver, TReceiver& a_receiver, bool a_inner, const char** a_dstErrorMessage) {
-            FCF_THROW_OR_RESULT_ERROR(a_dstErrorMessage, "Incorrect vector value");
+            FCF_THROW_OR_RESULT_ERROR(a_dstErrorMessage, "Incorrect vector value", a_resolver, false);
           }
         };
 
@@ -868,7 +954,7 @@ namespace fcf {
         struct FCF_UNION_DECL_VISIBILITY_HIDDEN Converter<bool, UnionMap, TNOP>{
           template <typename TResolver, typename TReceiver>
           inline void operator()(TResolver& a_resolver, TReceiver& a_receiver, bool a_inner, const char** a_dstErrorMessage) {
-            FCF_THROW_OR_RESULT_ERROR(a_dstErrorMessage, "Incorrect map value");
+            FCF_THROW_OR_RESULT_ERROR(a_dstErrorMessage, "Incorrect map value", a_resolver, false);
           }
         };
 
@@ -888,7 +974,7 @@ namespace fcf {
         struct FCF_UNION_DECL_VISIBILITY_HIDDEN Converter<Undefined, int, TNOP>{
           template <typename TResolver, typename TReceiver>
           inline void operator()(TResolver& a_resolver, TReceiver& a_receiver, bool a_inner, const char** a_dstErrorMessage) {
-            FCF_THROW_OR_RESULT_ERROR(a_dstErrorMessage, "Incorrect int value");
+            FCF_THROW_OR_RESULT_ERROR(a_dstErrorMessage, "Incorrect int value", a_resolver, false);
           }
         };
 
@@ -896,7 +982,7 @@ namespace fcf {
         struct FCF_UNION_DECL_VISIBILITY_HIDDEN Converter<Undefined, unsigned int, TNOP>{
           template <typename TResolver, typename TReceiver>
           inline void operator()(TResolver& a_resolver, TReceiver& a_receiver, bool a_inner, const char** a_dstErrorMessage) {
-            FCF_THROW_OR_RESULT_ERROR(a_dstErrorMessage, "Incorrect unsigned int value");
+            FCF_THROW_OR_RESULT_ERROR(a_dstErrorMessage, "Incorrect unsigned int value", a_resolver, false);
           }
         };
 
@@ -904,7 +990,7 @@ namespace fcf {
         struct FCF_UNION_DECL_VISIBILITY_HIDDEN Converter<Undefined, long long, TNOP>{
           template <typename TResolver, typename TReceiver>
           inline void operator()(TResolver& a_resolver, TReceiver& a_receiver, bool a_inner, const char** a_dstErrorMessage) {
-            FCF_THROW_OR_RESULT_ERROR(a_dstErrorMessage, "Incorrect long long value");
+            FCF_THROW_OR_RESULT_ERROR(a_dstErrorMessage, "Incorrect long long value", a_resolver, false);
           }
         };
 
@@ -912,7 +998,7 @@ namespace fcf {
         struct FCF_UNION_DECL_VISIBILITY_HIDDEN Converter<Undefined, unsigned long long, TNOP>{
           template <typename TResolver, typename TReceiver>
           inline void operator()(TResolver& a_resolver, TReceiver& a_receiver, bool a_inner, const char** a_dstErrorMessage) {
-            FCF_THROW_OR_RESULT_ERROR(a_dstErrorMessage, "Incorrect unsigned long long value");
+            FCF_THROW_OR_RESULT_ERROR(a_dstErrorMessage, "Incorrect unsigned long long value", a_resolver, false);
           }
         };
 
@@ -920,7 +1006,7 @@ namespace fcf {
         struct FCF_UNION_DECL_VISIBILITY_HIDDEN Converter<Undefined, double, TNOP>{
           template <typename TResolver, typename TReceiver>
           inline void operator()(TResolver& a_resolver, TReceiver& a_receiver, bool a_inner, const char** a_dstErrorMessage) {
-            FCF_THROW_OR_RESULT_ERROR(a_dstErrorMessage, "Incorrect double value");
+            FCF_THROW_OR_RESULT_ERROR(a_dstErrorMessage, "Incorrect double value", a_resolver, false);
           }
         };
 
@@ -936,7 +1022,7 @@ namespace fcf {
         struct FCF_UNION_DECL_VISIBILITY_HIDDEN Converter<Undefined, UnionVector, TNOP>{
           template <typename TResolver, typename TReceiver>
           inline void operator()(TResolver& a_resolver, TReceiver& a_receiver, bool a_inner, const char** a_dstErrorMessage) {
-            FCF_THROW_OR_RESULT_ERROR(a_dstErrorMessage, "Incorrect vector value");
+            FCF_THROW_OR_RESULT_ERROR(a_dstErrorMessage, "Incorrect vector value", a_resolver, false);
           }
         };
 
@@ -944,7 +1030,7 @@ namespace fcf {
         struct FCF_UNION_DECL_VISIBILITY_HIDDEN Converter<Undefined, UnionMap, TNOP>{
           template <typename TResolver, typename TReceiver>
           inline void operator()(TResolver& a_resolver, TReceiver& a_receiver, bool a_inner, const char** a_dstErrorMessage) {
-            FCF_THROW_OR_RESULT_ERROR(a_dstErrorMessage, "Incorrect map value");
+            FCF_THROW_OR_RESULT_ERROR(a_dstErrorMessage, "Incorrect map value", a_resolver, false);
           }
         };
 
@@ -963,7 +1049,7 @@ namespace fcf {
         struct FCF_UNION_DECL_VISIBILITY_HIDDEN Converter<Null, int, TNOP>{
           template <typename TResolver, typename TReceiver>
           inline void operator()(TResolver& a_resolver, TReceiver& a_receiver, bool a_inner, const char** a_dstErrorMessage) {
-            FCF_THROW_OR_RESULT_ERROR(a_dstErrorMessage, "Incorrect int value");
+            FCF_THROW_OR_RESULT_ERROR(a_dstErrorMessage, "Incorrect int value", a_resolver, false);
           }
         };
 
@@ -971,7 +1057,7 @@ namespace fcf {
         struct FCF_UNION_DECL_VISIBILITY_HIDDEN Converter<Null, unsigned int, TNOP>{
           template <typename TResolver, typename TReceiver>
           inline void operator()(TResolver& a_resolver, TReceiver& a_receiver, bool a_inner, const char** a_dstErrorMessage) {
-            FCF_THROW_OR_RESULT_ERROR(a_dstErrorMessage, "Incorrect undefined int value");
+            FCF_THROW_OR_RESULT_ERROR(a_dstErrorMessage, "Incorrect undefined int value", a_resolver, false);
           }
         };
 
@@ -979,7 +1065,7 @@ namespace fcf {
         struct FCF_UNION_DECL_VISIBILITY_HIDDEN Converter<Null, long long, TNOP>{
           template <typename TResolver, typename TReceiver>
           inline void operator()(TResolver& a_resolver, TReceiver& a_receiver, bool a_inner, const char** a_dstErrorMessage) {
-            FCF_THROW_OR_RESULT_ERROR(a_dstErrorMessage, "Incorrect long long value");
+            FCF_THROW_OR_RESULT_ERROR(a_dstErrorMessage, "Incorrect long long value", a_resolver, false);
           }
         };
 
@@ -987,7 +1073,7 @@ namespace fcf {
         struct FCF_UNION_DECL_VISIBILITY_HIDDEN Converter<Null, unsigned long long, TNOP>{
           template <typename TResolver, typename TReceiver>
           inline void operator()(TResolver& a_resolver, TReceiver& a_receiver, bool a_inner, const char** a_dstErrorMessage) {
-            FCF_THROW_OR_RESULT_ERROR(a_dstErrorMessage, "Incorrect unsigned long long value");
+            FCF_THROW_OR_RESULT_ERROR(a_dstErrorMessage, "Incorrect unsigned long long value", a_resolver, false);
           }
         };
 
@@ -995,7 +1081,7 @@ namespace fcf {
         struct FCF_UNION_DECL_VISIBILITY_HIDDEN Converter<Null, double, TNOP>{
           template <typename TResolver, typename TReceiver>
           inline void operator()(TResolver& a_resolver, TReceiver& a_receiver, bool a_inner, const char** a_dstErrorMessage) {
-            FCF_THROW_OR_RESULT_ERROR(a_dstErrorMessage, "Incorrect double value");
+            FCF_THROW_OR_RESULT_ERROR(a_dstErrorMessage, "Incorrect double value", a_resolver, false);
           }
         };
 
@@ -1011,7 +1097,7 @@ namespace fcf {
         struct FCF_UNION_DECL_VISIBILITY_HIDDEN Converter<Null, UnionVector, TNOP>{
           template <typename TResolver, typename TReceiver>
           inline void operator()(TResolver& a_resolver, TReceiver& a_receiver, bool a_inner, const char** a_dstErrorMessage) {
-            FCF_THROW_OR_RESULT_ERROR(a_dstErrorMessage, "Incorrect vector value");
+            FCF_THROW_OR_RESULT_ERROR(a_dstErrorMessage, "Incorrect vector value", a_resolver, false);
           }
         };
 
@@ -1019,7 +1105,7 @@ namespace fcf {
         struct FCF_UNION_DECL_VISIBILITY_HIDDEN Converter<Null, UnionMap, TNOP>{
           template <typename TResolver, typename TReceiver>
           inline void operator()(TResolver& a_resolver, TReceiver& a_receiver, bool a_inner, const char** a_dstErrorMessage) {
-            FCF_THROW_OR_RESULT_ERROR(a_dstErrorMessage, "Incorrect map value");
+            FCF_THROW_OR_RESULT_ERROR(a_dstErrorMessage, "Incorrect map value", a_resolver, false);
           }
         };
 
@@ -1050,7 +1136,7 @@ namespace fcf {
                 ++m;
                 ++i;
               } else {
-                FCF_THROW_OR_RESULT_ERROR(a_dstErrorMessage, "Incorrect number format");
+                FCF_THROW_OR_RESULT_ERROR(a_dstErrorMessage, "Incorrect number format", a_resolver, false);
                 return;
               }
             } else if (c == '.') {
@@ -1058,7 +1144,7 @@ namespace fcf {
                 ++d;
                 ++i;
               } else {
-                FCF_THROW_OR_RESULT_ERROR(a_dstErrorMessage, "Incorrect number format");
+                FCF_THROW_OR_RESULT_ERROR(a_dstErrorMessage, "Incorrect number format", a_resolver, false);
                 return;
               }
             } else if (c <= (unsigned char)' ') {
@@ -1070,7 +1156,7 @@ namespace fcf {
             } else  if (c >= (unsigned char)'0' && c <= (unsigned char)'9') {
               int v = c - (unsigned char)'0';
               if (v && !d && i && lc == '0' && (!!a_value1 && !*a_value1)) {
-                FCF_THROW_OR_RESULT_ERROR(a_dstErrorMessage, "Incorrect number format");
+                FCF_THROW_OR_RESULT_ERROR(a_dstErrorMessage, "Incorrect number format", a_resolver, false);
                 return;
               }
               if (!d) {
@@ -1122,7 +1208,7 @@ namespace fcf {
             ++mins;
           }
           if (i < mins) {
-            FCF_THROW_OR_RESULT_ERROR(a_dstErrorMessage, "Incorrect number format");
+            FCF_THROW_OR_RESULT_ERROR(a_dstErrorMessage, "Incorrect number format", a_resolver, false);
             return;
           }
           if (a_dstPoint){
@@ -1138,13 +1224,13 @@ namespace fcf {
           std::string str;
           skipSpaces(a_resolver);
           if (a_resolver.end()) {
-            FCF_THROW_OR_RESULT_ERROR(a_dstErrorMessage, "Incorrect string format");
+            FCF_THROW_OR_RESULT_ERROR(a_dstErrorMessage, "Incorrect string format", a_resolver, false);
             return std::string();
           }
           unsigned char ce = a_resolver.read();
           a_resolver.next();
           if (a_resolver.end() || (ce != '\"' && ce != '\'')) {
-            FCF_THROW_OR_RESULT_ERROR(a_dstErrorMessage, "Incorrect string format");
+            FCF_THROW_OR_RESULT_ERROR(a_dstErrorMessage, "Incorrect string format", a_resolver, false);
             return std::string();
           }
           size_t sc = 0;
@@ -1170,7 +1256,7 @@ namespace fcf {
             a_resolver.next();
           }
           if (c != ce) {
-            FCF_THROW_OR_RESULT_ERROR(a_dstErrorMessage, "Incorrect string format");
+            FCF_THROW_OR_RESULT_ERROR(a_dstErrorMessage, "Incorrect string format", a_resolver, false);
             return std::string();
           }
           return str;
@@ -1183,7 +1269,7 @@ namespace fcf {
         FCF_UNION_DECL_VISIBILITY_HIDDEN Undefined parseUndefined(TResolver& a_resolver, const char** a_dstErrorMessage) {
           skipSpaces(a_resolver);
           if (a_resolver.end()) {
-            FCF_THROW_OR_RESULT_ERROR(a_dstErrorMessage, "Incorrect undefined value format");
+            FCF_THROW_OR_RESULT_ERROR(a_dstErrorMessage, "Incorrect undefined value format", a_resolver, false);
             return fcf::undefined;
           }
           const char* expected = "undefined";
@@ -1196,11 +1282,11 @@ namespace fcf {
                 return fcf::undefined;
               }
             } else {
-              FCF_THROW_OR_RESULT_ERROR(a_dstErrorMessage, "Incorrect undefined value format");
+              FCF_THROW_OR_RESULT_ERROR(a_dstErrorMessage, "Incorrect undefined value format", a_resolver, false);
               return fcf::undefined;
             }
           }
-          FCF_THROW_OR_RESULT_ERROR(a_dstErrorMessage, "Incorrect undefined value format");
+          FCF_THROW_OR_RESULT_ERROR(a_dstErrorMessage, "Incorrect undefined value format", a_resolver, false);
           return fcf::undefined;
         }
 
@@ -1208,7 +1294,7 @@ namespace fcf {
         FCF_UNION_DECL_VISIBILITY_HIDDEN Null parseNull(TResolver& a_resolver, const char** a_dstErrorMessage) {
           skipSpaces(a_resolver);
           if (a_resolver.end()) {
-            FCF_THROW_OR_RESULT_ERROR(a_dstErrorMessage, "Incorrect null value format");
+            FCF_THROW_OR_RESULT_ERROR(a_dstErrorMessage, "Incorrect null value format", a_resolver, false);
             return fcf::null;
           }
           const char* expected = "null";
@@ -1221,11 +1307,11 @@ namespace fcf {
                 return fcf::null;
               }
             } else {
-              FCF_THROW_OR_RESULT_ERROR(a_dstErrorMessage, "Incorrect null value format");
+              FCF_THROW_OR_RESULT_ERROR(a_dstErrorMessage, "Incorrect null value format", a_resolver, false);
               return fcf::null;
             }
           }
-          FCF_THROW_OR_RESULT_ERROR(a_dstErrorMessage, "Incorrect null value format");
+          FCF_THROW_OR_RESULT_ERROR(a_dstErrorMessage, "Incorrect null value format", a_resolver, false);
           return fcf::null;
         }
 
@@ -1243,7 +1329,7 @@ namespace fcf {
             a_resolver.next();
           };
           if (a_resolver.end()){
-            FCF_THROW_OR_RESULT_ERROR(a_dstErrorMessage, "Incorrect bool value format");
+            FCF_THROW_OR_RESULT_ERROR(a_dstErrorMessage, "Incorrect bool value format", a_resolver, false);
             return false;
           }
           if (c == 'f') {
@@ -1260,7 +1346,7 @@ namespace fcf {
             double dvalue;
             parseNumber(a_resolver, false, 0, 0, &dvalue, (double*)0, (double*)0, errorMessage);
             if (*errorMessage) {
-              FCF_THROW_OR_RESULT_ERROR(a_dstErrorMessage, "Incorrect bool value format");
+              FCF_THROW_OR_RESULT_ERROR(a_dstErrorMessage, "Incorrect bool value format", a_resolver, false);
               return false;
             }
             return dvalue > 0.000001 || dvalue < -0.000001;
@@ -1274,11 +1360,11 @@ namespace fcf {
                 return result;
               }
             } else {
-              FCF_THROW_OR_RESULT_ERROR(a_dstErrorMessage, "Incorrect bool value format");
+              FCF_THROW_OR_RESULT_ERROR(a_dstErrorMessage, "Incorrect bool value format", a_resolver, false);
               return false;
             }
           }
-          FCF_THROW_OR_RESULT_ERROR(a_dstErrorMessage, "Incorrect bool value format");
+          FCF_THROW_OR_RESULT_ERROR(a_dstErrorMessage, "Incorrect bool value format", a_resolver, false);
           return false;
         }
 
@@ -1332,7 +1418,7 @@ namespace fcf {
               ++expected;
             }
             if (*expected){
-              FCF_THROW_OR_RESULT_ERROR(a_dstErrorMessage, "Incorrect undefined format")
+              FCF_THROW_OR_RESULT_ERROR(a_dstErrorMessage, "Incorrect undefined format", a_resolver, false)
               return;
             }
             a_receiver(fcf::undefined);
@@ -1352,7 +1438,7 @@ namespace fcf {
               ++expected;
             }
             if (*expected){
-              FCF_THROW_OR_RESULT_ERROR(a_dstErrorMessage, "Incorrect null format")
+              FCF_THROW_OR_RESULT_ERROR(a_dstErrorMessage, "Incorrect null format", a_resolver, false)
               return;
             }
             a_receiver(fcf::null);
@@ -1440,7 +1526,7 @@ namespace fcf {
         struct FCF_UNION_DECL_VISIBILITY_HIDDEN Converter<UnionVector, Ty, TNOP>{
           template <typename TResolver, typename TReceiver>
           inline void operator()(TResolver& a_resolver, TReceiver& a_receiver, bool a_inner, const char** a_dstErrorMessage) {
-            FCF_THROW_OR_RESULT_ERROR(a_dstErrorMessage, "Incorrect conversion from  vector value");
+            FCF_THROW_OR_RESULT_ERROR(a_dstErrorMessage, "Incorrect conversion from  vector value", a_resolver, false);
           }
         };
 
@@ -1448,7 +1534,7 @@ namespace fcf {
         struct FCF_UNION_DECL_VISIBILITY_HIDDEN Converter<UnionVector, unsigned int, TNOP>{
           template <typename TResolver, typename TReceiver>
           inline void operator()(TResolver& a_resolver, TReceiver& a_receiver, bool a_inner, const char** a_dstErrorMessage) {
-            FCF_THROW_OR_RESULT_ERROR(a_dstErrorMessage, "Incorrect unsigned integer value");
+            FCF_THROW_OR_RESULT_ERROR(a_dstErrorMessage, "Incorrect unsigned integer value", a_resolver, false);
           }
         };
 
@@ -1456,7 +1542,7 @@ namespace fcf {
         struct FCF_UNION_DECL_VISIBILITY_HIDDEN Converter<UnionVector, long long, TNOP>{
           template <typename TResolver, typename TReceiver>
           inline void operator()(TResolver& a_resolver, TReceiver& a_receiver, bool a_inner, const char** a_dstErrorMessage) {
-            FCF_THROW_OR_RESULT_ERROR(a_dstErrorMessage, "Incorrect long long value");
+            FCF_THROW_OR_RESULT_ERROR(a_dstErrorMessage, "Incorrect long long value", a_resolver, false);
           }
         };
 
@@ -1464,7 +1550,7 @@ namespace fcf {
         struct FCF_UNION_DECL_VISIBILITY_HIDDEN Converter<UnionVector, unsigned long long, TNOP>{
           template <typename TResolver, typename TReceiver>
           inline void operator()(TResolver& a_resolver, TReceiver& a_receiver, bool a_inner, const char** a_dstErrorMessage) {
-            FCF_THROW_OR_RESULT_ERROR(a_dstErrorMessage, "Incorrect unsigned long long value");
+            FCF_THROW_OR_RESULT_ERROR(a_dstErrorMessage, "Incorrect unsigned long long value", a_resolver, false);
           }
         };
 
@@ -1472,7 +1558,7 @@ namespace fcf {
         struct FCF_UNION_DECL_VISIBILITY_HIDDEN Converter<UnionVector, double, TNOP>{
           template <typename TResolver, typename TReceiver>
           inline void operator()(TResolver& a_resolver, TReceiver& a_receiver, bool a_inner, const char** a_dstErrorMessage) {
-            FCF_THROW_OR_RESULT_ERROR(a_dstErrorMessage, "Incorrect double value");
+            FCF_THROW_OR_RESULT_ERROR(a_dstErrorMessage, "Incorrect double value", a_resolver, false);
           }
         };
 
@@ -1480,7 +1566,7 @@ namespace fcf {
         struct FCF_UNION_DECL_VISIBILITY_HIDDEN Converter<UnionVector, bool, TNOP>{
           template <typename TResolver, typename TReceiver>
           inline void operator()(TResolver& a_resolver, TReceiver& a_receiver, bool a_inner, const char** a_dstErrorMessage) {
-            FCF_THROW_OR_RESULT_ERROR(a_dstErrorMessage, "Incorrect boolean value");
+            FCF_THROW_OR_RESULT_ERROR(a_dstErrorMessage, "Incorrect boolean value", a_resolver, false);
           }
         };
 
@@ -1510,7 +1596,7 @@ namespace fcf {
         struct FCF_UNION_DECL_VISIBILITY_HIDDEN Converter<UnionMap, Ty, TNOP>{
           template <typename TResolver, typename TReceiver>
           inline void operator()(TResolver& a_resolver, TReceiver& a_receiver, bool a_inner, const char** a_dstErrorMessage) {
-            FCF_THROW_OR_RESULT_ERROR(a_dstErrorMessage, "Incorrect integer value");
+            FCF_THROW_OR_RESULT_ERROR(a_dstErrorMessage, "Incorrect integer value", a_resolver, false);
           }
         };
 
@@ -1518,7 +1604,7 @@ namespace fcf {
         struct FCF_UNION_DECL_VISIBILITY_HIDDEN Converter<UnionMap, unsigned int, TNOP>{
           template <typename TResolver, typename TReceiver>
           inline void operator()(TResolver& a_resolver, TReceiver& a_receiver, bool a_inner, const char** a_dstErrorMessage) {
-            FCF_THROW_OR_RESULT_ERROR(a_dstErrorMessage, "Incorrect unsigned integer value");
+            FCF_THROW_OR_RESULT_ERROR(a_dstErrorMessage, "Incorrect unsigned integer value", a_resolver, false);
           }
         };
 
@@ -1526,7 +1612,7 @@ namespace fcf {
         struct FCF_UNION_DECL_VISIBILITY_HIDDEN Converter<UnionMap, long long, TNOP>{
           template <typename TResolver, typename TReceiver>
           inline void operator()(TResolver& a_resolver, TReceiver& a_receiver, bool a_inner, const char** a_dstErrorMessage) {
-            FCF_THROW_OR_RESULT_ERROR(a_dstErrorMessage, "Incorrect long long value");
+            FCF_THROW_OR_RESULT_ERROR(a_dstErrorMessage, "Incorrect long long value", a_resolver, false);
           }
         };
 
@@ -1534,7 +1620,7 @@ namespace fcf {
         struct FCF_UNION_DECL_VISIBILITY_HIDDEN Converter<UnionMap, unsigned long long, TNOP>{
           template <typename TResolver, typename TReceiver>
           inline void operator()(TResolver& a_resolver, TReceiver& a_receiver, bool a_inner, const char** a_dstErrorMessage) {
-            FCF_THROW_OR_RESULT_ERROR(a_dstErrorMessage, "Incorrect unsigned long long value");
+            FCF_THROW_OR_RESULT_ERROR(a_dstErrorMessage, "Incorrect unsigned long long value", a_resolver, false);
           }
         };
 
@@ -1542,7 +1628,7 @@ namespace fcf {
         struct FCF_UNION_DECL_VISIBILITY_HIDDEN Converter<UnionMap, double, TNOP>{
           template <typename TResolver, typename TReceiver>
           inline void operator()(TResolver& a_resolver, TReceiver& a_receiver, bool a_inner, const char** a_dstErrorMessage) {
-            FCF_THROW_OR_RESULT_ERROR(a_dstErrorMessage, "Incorrect double value");
+            FCF_THROW_OR_RESULT_ERROR(a_dstErrorMessage, "Incorrect double value", a_resolver, false);
           }
         };
 
@@ -1550,7 +1636,7 @@ namespace fcf {
         struct FCF_UNION_DECL_VISIBILITY_HIDDEN Converter<UnionMap, bool, TNOP>{
           template <typename TResolver, typename TReceiver>
           inline void operator()(TResolver& a_resolver, TReceiver& a_receiver, bool a_inner, const char** a_dstErrorMessage) {
-            FCF_THROW_OR_RESULT_ERROR(a_dstErrorMessage, "Incorrect boolean value");
+            FCF_THROW_OR_RESULT_ERROR(a_dstErrorMessage, "Incorrect boolean value", a_resolver, false);
           }
         };
 
@@ -1796,7 +1882,7 @@ namespace fcf {
               case UT_VECTOR:     return Executor<ExecutorIndex, UnionVector, Ty>()(a_operand);
               case UT_MAP:        return Executor<ExecutorIndex, UnionMap, Ty>()(a_operand);
             }
-            throw std::runtime_error("Invalid union type");
+            throw UnionException("Invalid union type");
           }
         };
 
@@ -2097,14 +2183,10 @@ namespace fcf {
         FCF_UNION_DECL_VISIBILITY_HIDDEN bool parseValue(TResolver& a_resolver, Union& a_union, const char** a_dstErrorMessage){
           skipSpaces(a_resolver);
           if (a_resolver.end()) {
-            FCF_THROW_OR_RESULT_ERROR(a_dstErrorMessage, "There is not enough data in the buffer to parse the value");
+            FCF_THROW_OR_RESULT_ERROR(a_dstErrorMessage, "There is not enough data in the buffer to parse the value", a_resolver, true);
             return false;
           }
           unsigned char c = (unsigned char)a_resolver.read();
-          if (a_resolver.end()) {
-            FCF_THROW_OR_RESULT_ERROR(a_dstErrorMessage, "There is not enough data in the buffer to parse the value");
-            return false;
-          }
           if (c == '-' || (c >= (unsigned char)'0' && c <= (unsigned char)'9')){
             bool               minus;
             bool               point;
@@ -2155,17 +2237,17 @@ namespace fcf {
           a_receiver.get().clear();
           skipSpaces(a_resolver);
           if (a_resolver.end()) {
-            FCF_THROW_OR_RESULT_ERROR(a_dstErrorMessage, "Incorrect vector format");
+            FCF_THROW_OR_RESULT_ERROR(a_dstErrorMessage, "Incorrect vector format", a_resolver, false);
             return;
           }
           unsigned char c = (unsigned char)a_resolver.read();
           if (c != '[') {
-            FCF_THROW_OR_RESULT_ERROR(a_dstErrorMessage, "Incorrect vector format");
+            FCF_THROW_OR_RESULT_ERROR(a_dstErrorMessage, "Incorrect vector format", a_resolver, false);
             return;
           }
           a_resolver.next();
           if (a_resolver.end()) {
-            FCF_THROW_OR_RESULT_ERROR(a_dstErrorMessage, "Incorrect vector format");
+            FCF_THROW_OR_RESULT_ERROR(a_dstErrorMessage, "Incorrect vector format", a_resolver, false);
             return;
           }
 
@@ -2174,7 +2256,7 @@ namespace fcf {
           while(!a_resolver.end()) {
             skipSpaces(a_resolver);
             if (a_resolver.end()) {
-              FCF_THROW_OR_RESULT_ERROR(a_dstErrorMessage, "Incorrect vector format");
+              FCF_THROW_OR_RESULT_ERROR(a_dstErrorMessage, "Incorrect vector format", a_resolver, false);
               return;
             }
             Union u;
@@ -2183,7 +2265,7 @@ namespace fcf {
 
               skipSpaces(a_resolver);
               if (a_resolver.end()) {
-                FCF_THROW_OR_RESULT_ERROR(a_dstErrorMessage, "Incorrect vector format");
+                FCF_THROW_OR_RESULT_ERROR(a_dstErrorMessage, "Incorrect vector format", a_resolver, false);
                 return;
               }
 
@@ -2191,14 +2273,14 @@ namespace fcf {
               if (c == ',') {
                 a_resolver.next();
                 if (a_resolver.end()) {
-                  FCF_THROW_OR_RESULT_ERROR(a_dstErrorMessage, "Incorrect vector format");
+                  FCF_THROW_OR_RESULT_ERROR(a_dstErrorMessage, "Incorrect vector format", a_resolver, false);
                   return;
                 }
               }
               lastValid = true;
             } else {
               if (!lastValid){
-                FCF_THROW_OR_RESULT_ERROR(a_dstErrorMessage, "Incorrect vector format");
+                FCF_THROW_OR_RESULT_ERROR(a_dstErrorMessage, "Incorrect vector format", a_resolver, false);
                 return;
               }
               lastValid = false;
@@ -2209,7 +2291,7 @@ namespace fcf {
               return;
             }
           }
-          FCF_THROW_OR_RESULT_ERROR(a_dstErrorMessage, "Incorrect vector format");
+          FCF_THROW_OR_RESULT_ERROR(a_dstErrorMessage, "Incorrect vector format", a_resolver, false);
         }
 
         template <typename TResolver, typename TReceiver>
@@ -2217,17 +2299,17 @@ namespace fcf {
           a_receiver.get().clear();
           skipSpaces(a_resolver);
           if (a_resolver.end()) {
-            FCF_THROW_OR_RESULT_ERROR(a_dstErrorMessage, "Incorrect map format");
+            FCF_THROW_OR_RESULT_ERROR(a_dstErrorMessage, "Incorrect map format", a_resolver, false);
             return;
           }
           unsigned char c = (unsigned char)a_resolver.read();
           if (c != '{') {
-            FCF_THROW_OR_RESULT_ERROR(a_dstErrorMessage, "Incorrect map format");
+            FCF_THROW_OR_RESULT_ERROR(a_dstErrorMessage, "Incorrect map format", a_resolver, false);
             return;
           }
           a_resolver.next();
           if (a_resolver.end()) {
-            FCF_THROW_OR_RESULT_ERROR(a_dstErrorMessage, "Incorrect map format");
+            FCF_THROW_OR_RESULT_ERROR(a_dstErrorMessage, "Incorrect map format", a_resolver, false);
             return;
           }
 
@@ -2236,7 +2318,7 @@ namespace fcf {
           while(!a_resolver.end()) {
             skipSpaces(a_resolver);
             if (a_resolver.end()) {
-              FCF_THROW_OR_RESULT_ERROR(a_dstErrorMessage, "Incorrect map format");
+              FCF_THROW_OR_RESULT_ERROR(a_dstErrorMessage, "Incorrect map format", a_resolver, false);
               return;
             }
 
@@ -2245,7 +2327,7 @@ namespace fcf {
 
             skipSpaces(a_resolver);
             if (a_resolver.end()) {
-              FCF_THROW_OR_RESULT_ERROR(a_dstErrorMessage, "Incorrect map format");
+              FCF_THROW_OR_RESULT_ERROR(a_dstErrorMessage, "Incorrect map format", a_resolver, false);
               return;
             }
 
@@ -2256,19 +2338,19 @@ namespace fcf {
                 a_resolver.next();
                 return;
               } else {
-                FCF_THROW_OR_RESULT_ERROR(a_dstErrorMessage, "Incorrect map format");
+                FCF_THROW_OR_RESULT_ERROR(a_dstErrorMessage, "Incorrect map format", a_resolver, false);
                 return;
               }
             }
 
             if (c != ':') {
-              FCF_THROW_OR_RESULT_ERROR(a_dstErrorMessage, "Incorrect map format");
+              FCF_THROW_OR_RESULT_ERROR(a_dstErrorMessage, "Incorrect map format", a_resolver, false);
               return;
             }
 
             a_resolver.next();
             if (a_resolver.end()) {
-              FCF_THROW_OR_RESULT_ERROR(a_dstErrorMessage, "Incorrect map format");
+              FCF_THROW_OR_RESULT_ERROR(a_dstErrorMessage, "Incorrect map format", a_resolver, false);
               return;
             }
 
@@ -2276,7 +2358,7 @@ namespace fcf {
             bool validValue = parseValue(a_resolver, value, a_dstErrorMessage);
 
             if (!validValue){
-              FCF_THROW_OR_RESULT_ERROR(a_dstErrorMessage, "Incorrect map format");
+              FCF_THROW_OR_RESULT_ERROR(a_dstErrorMessage, "Incorrect map format", a_resolver, false);
               return;
             }
 
@@ -2284,7 +2366,7 @@ namespace fcf {
 
             skipSpaces(a_resolver);
             if (a_resolver.end()) {
-              FCF_THROW_OR_RESULT_ERROR(a_dstErrorMessage, "Incorrect map format");
+              FCF_THROW_OR_RESULT_ERROR(a_dstErrorMessage, "Incorrect map format", a_resolver, false);
               return;
             }
 
@@ -2292,12 +2374,12 @@ namespace fcf {
             if (c == ',') {
               a_resolver.next();
               if (a_resolver.end()) {
-                FCF_THROW_OR_RESULT_ERROR(a_dstErrorMessage, "Incorrect map format");
+                FCF_THROW_OR_RESULT_ERROR(a_dstErrorMessage, "Incorrect map format", a_resolver, false);
                 return;
               }
             }
           }
-          FCF_THROW_OR_RESULT_ERROR(a_dstErrorMessage, "Incorrect map format");
+          FCF_THROW_OR_RESULT_ERROR(a_dstErrorMessage, "Incorrect map format", a_resolver, false);
         }
 
 
@@ -2385,7 +2467,7 @@ namespace fcf {
         bool parseKey(TResolver& a_resolver, Union& a_key, const char** a_dstErrorMessage) {
           skipSpaces(a_resolver);
           if (a_resolver.end()) {
-            FCF_THROW_OR_RESULT_ERROR(a_dstErrorMessage, "Incorrect key format");
+            FCF_THROW_OR_RESULT_ERROR(a_dstErrorMessage, "Incorrect key format", a_resolver, false);
             return false;
           }
           unsigned char c = (unsigned char)a_resolver.read();
@@ -2416,7 +2498,7 @@ namespace fcf {
               c = (unsigned char)a_resolver.read();
             }
             if (str.empty()){
-              FCF_THROW_OR_RESULT_ERROR(a_dstErrorMessage, "Incorrect key format");
+              FCF_THROW_OR_RESULT_ERROR(a_dstErrorMessage, "Incorrect key format", a_resolver, false);
               return false;
             }
             a_key.set(str);
@@ -2964,6 +3046,30 @@ namespace fcf {
     }
   #endif // #ifdef FCF_UNION_IMPLEMENTATION
 
+  //////////////////////////////////////////////
+  // UnionException impementation
+  ////////////////////////!//////////////////////
+  #ifdef FCF_UNION_IMPLEMENTATION
+    std::string UnionException::_tostr(const char* a_message, size_t a_line, size_t a_col) {
+      std::string result = std::string(a_message);
+      if (a_line != SIZE_MAX || a_col != SIZE_MAX) {
+        result += " [";
+        if (a_line != SIZE_MAX){
+          result += "line: ";
+          result += std::to_string(a_line);
+          if (a_col != SIZE_MAX) {
+            result += "; ";
+          }
+        }
+        if (a_col != SIZE_MAX){
+          result += "column: ";
+          result += std::to_string(a_col);
+        }
+        result += "]";
+      }
+      return result;
+    }
+  #endif;
 
 
   //////////////////////////////////////////////
@@ -3176,7 +3282,7 @@ namespace fcf {
           UnionVector* p = (UnionVector*)(void*)&value.vvector[0];
           size_t key = (size_t)a_key;
           if (key >= p->size()) {
-            throw std::runtime_error("Key not found");
+            throw UnionException("Key not found");
           }
           return (*p)[key];
         } else if (type == UT_MAP) {
@@ -3185,12 +3291,12 @@ namespace fcf {
           if (it != p->end()){
             return it->second;
           } else {
-            throw std::runtime_error("Key not found");
+            throw UnionException("Key not found");
           }
        }
       } catch(std::exception&){
       }
-      throw std::runtime_error("The object is not a container");
+      throw UnionException("The object is not a container");
     }
   #endif // #ifdef FCF_UNION_IMPLEMENTATION
 
@@ -3215,7 +3321,7 @@ namespace fcf {
        }
       } catch(std::exception&){
       }
-      throw std::runtime_error("The object is not a container");
+      throw UnionException("The object is not a container");
     }
   #endif // #ifdef FCF_UNION_IMPLEMENTATION
 
@@ -3251,7 +3357,7 @@ namespace fcf {
         }
         return iterator(insertInfo.first, p);
       }
-      throw std::runtime_error("The object is not a container");
+      throw UnionException("The object is not a container");
     }
   #endif // #ifdef FCF_UNION_IMPLEMENTATION
 
@@ -3403,9 +3509,9 @@ namespace fcf {
     void Union::parse(const std::string& a_source) {
       {
         Union u;
-        fcf::Details::NConvert::ConstResolver<std::string> r{a_source};
+        fcf::Details::NConvert::ConstResolver<std::string> r{a_source, true};
         if (!Details::NConvert::parseValue(r, u, 0)) {
-          throw std::runtime_error("Invalid string format");
+          throw UnionException("Incorrect source data format", 1, 1, false);
         } else {
           swap(u);
         }
@@ -3416,9 +3522,9 @@ namespace fcf {
   #ifdef FCF_UNION_IMPLEMENTATION
     void Union::parse(std::basic_istream<char>& a_source) {
       Union u;
-      fcf::Details::NConvert::ConstResolver< std::basic_istream<char> > r{a_source};
+      fcf::Details::NConvert::ConstResolver< std::basic_istream<char> > r{a_source, true};
       if (!Details::NConvert::parseValue(r, u, 0)) {
-        throw std::runtime_error("Invalid string format");
+        throw UnionException("Incorrect source data format", 1, 1, false);
       } else {
         this->swap(u);
       }

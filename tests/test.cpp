@@ -14,7 +14,7 @@
 
 
 void readStringVectorTest(){
-  
+
   {
     fcf::Union v;
     v.set(std::string("[]"));
@@ -43,13 +43,13 @@ void readStringVectorTest(){
       throw std::runtime_error(std::string() + "Test error: vector.size() != 4; source: " + source);
     }
     if (vector[0].get<int>() != 5){
-      throw std::runtime_error(std::string() + "Test error: vector[0].get<int>() != 5; source: " + source);    
+      throw std::runtime_error(std::string() + "Test error: vector[0].get<int>() != 5; source: " + source);
     }
     if (vector[1].get<bool>() != false){
-      throw std::runtime_error(std::string() + "Test error: vector[1].get<bool>() != false; source: " + source);    
+      throw std::runtime_error(std::string() + "Test error: vector[1].get<bool>() != false; source: " + source);
     }
     if (vector[2].get<bool>() != true){
-      throw std::runtime_error(std::string() + "Test error: vector[2].get<bool>() != true; source: " + source);    
+      throw std::runtime_error(std::string() + "Test error: vector[2].get<bool>() != true; source: " + source);
     }
   }
   {
@@ -61,13 +61,13 @@ void readStringVectorTest(){
       throw std::runtime_error(std::string() + "Test error: vector.size() != 2; source: " + source);
     }
     if (vector[0].get<std::string>() != "Test\""){
-      throw std::runtime_error(std::string() + "Test error: vector[0].get<std::string>() != \"Test\\\"\"; source: " + source);    
+      throw std::runtime_error(std::string() + "Test error: vector[0].get<std::string>() != \"Test\\\"\"; source: " + source);
     }
     if (!vector[1].is<fcf::UnionVector>()){
-      throw std::runtime_error(std::string() + "Test error: !vector[1].is<fcf::UnionVector>(); source: " + source);    
+      throw std::runtime_error(std::string() + "Test error: !vector[1].is<fcf::UnionVector>(); source: " + source);
     }
     if (vector[1].ref<fcf::UnionVector>().size() != 0){
-      throw std::runtime_error(std::string() + "Test error: vector[1].ref<fcf::UnionVector>().size() != 0; source: " + source);    
+      throw std::runtime_error(std::string() + "Test error: vector[1].ref<fcf::UnionVector>().size() != 0; source: " + source);
     }
   }
   {
@@ -161,7 +161,7 @@ void unionMapTest() {
     std::string json(v.get<std::string>());
     TEST(json == "{\"1\": 1, \"2\": [1, 2, 3]}");
   }
-  
+
   {
     fcf::Union u(fcf::UnionMap{});
     u["value"] = fcf::Union(fcf::UnionMap{});
@@ -484,13 +484,13 @@ void unionTypeTest() {
     TEST(u.is<std::string>());
     TEST(u.ref<std::string>() == "String");
   }
-  
- 
+
+
 }
 
 void unionCommentTest(){
- 
-  { 
+
+  {
     std::string source =
       "[\n"
       "  // Test line\n"
@@ -501,7 +501,7 @@ void unionCommentTest(){
     TEST(u[0] == 1);
     TEST(u.size() == 1);
   }
-  { 
+  {
     std::string source =
       "[\n"
       "  /*\n"
@@ -518,7 +518,7 @@ void unionCommentTest(){
     TEST(u[1] == 2);
     TEST(u[2] == "// /*info*/");
   }
-  { 
+  {
     std::string source =
       "[\n"
       "  /*\n"
@@ -546,5 +546,5 @@ void unionCommentTest(){
     TEST(u["003"] == 3);
     TEST(u.size() == 5);
   }
-  
+
 }

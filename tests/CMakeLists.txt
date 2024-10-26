@@ -20,6 +20,7 @@ add_executable( "tests"
                 orderTest.cpp
                 eraseTest.cpp
                 streamTest.cpp
+                errorTest.cpp
                 main.cpp
               )
 

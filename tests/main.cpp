@@ -14,6 +14,7 @@ void isTest();
 void findTest();
 void eraseTest();
 void streamTest();
+void errorTest();
 
 int main(int a_argc, char* a_argv[]){
 
@@ -29,6 +30,7 @@ int main(int a_argc, char* a_argv[]){
   findTest();
   eraseTest();
   streamTest();
+  errorTest();
 
   std::cout << "Complete!" << std::endl;
   return 0;
