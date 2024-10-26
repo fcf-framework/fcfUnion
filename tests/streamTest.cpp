@@ -20,7 +20,7 @@ void streamTest(){
     bool error = false;
     try {
       u.parse(ifs);
-    } catch(std::exception& e){
+    } catch(std::exception&){
       error = true;
     }
     TEST(error == true);
@@ -32,7 +32,7 @@ void streamTest(){
     bool error = false;
     try {
       u.parse(ifs);
-    } catch(std::exception& e){
+    } catch(std::exception&){
       error = true;
     }
     TEST(error == true);
@@ -44,7 +44,7 @@ void streamTest(){
     bool error = false;
     try {
       u.parse(ifs);
-    } catch(std::exception& e){
+    } catch(std::exception&){
       error = true;
     }
     TEST(error == false);

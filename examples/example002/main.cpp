@@ -9,7 +9,7 @@ int main(int a_argc, char* a_argv[]){
   try {
     ifs.open(confFilePath);
     ifs.exceptions(std::ifstream::badbit);
-  } catch(std::exception& e){
+  } catch(std::exception&){
     std::cout << "ERROR: Failed open file '" << confFilePath << "'."  << std::endl;
     return 1;
   }

@@ -15,8 +15,8 @@ void errorTest() {
         "]"
       );
     } catch(const fcf::UnionException& e){
-      l = e.line();
-      c = e.column();
+      l = (int)e.line();
+      c = (int)e.column();
     }
     TEST(l == 2);
     TEST(c == 4);
@@ -39,8 +39,8 @@ void errorTest() {
     } catch(const fcf::UnionException& e){
       TEST(std::string(e.what()) == "Incorrect map format [line: 5; column: 11]");
       TEST(std::string(e.swhat()) == "Incorrect map format");
-      l = e.line();
-      c = e.column();
+      l = (int)e.line();
+      c = (int)e.column();
     }
     TEST(l == 5);
     TEST(c == 11);
@@ -64,8 +64,8 @@ void errorTest() {
     } catch(const fcf::UnionException& e){
       TEST(std::string(e.what()) == "Incorrect map format");
       TEST(std::string(e.swhat()) == "Incorrect map format");
-      l = e.line();
-      c = e.column();
+      l = (int)e.line();
+      c = (int)e.column();
     }
     TEST(l == SIZE_MAX);
     TEST(c == SIZE_MAX);
@@ -80,8 +80,8 @@ void errorTest() {
     } catch(const fcf::UnionException& e){
       TEST(std::string(e.what()) == "There is not enough data in the buffer to parse the value");
       TEST(std::string(e.swhat()) == "There is not enough data in the buffer to parse the value");
-      l = e.line();
-      c = e.column();
+      l = (int)e.line();
+      c = (int)e.column();
     }
     TEST(l == SIZE_MAX);
     TEST(c == SIZE_MAX);
@@ -94,8 +94,8 @@ void errorTest() {
     try {
       u.parse("asd");
     } catch(const fcf::UnionException& e){
-      l = e.line();
-      c = e.column();
+      l = (int)e.line();
+      c = (int)e.column();
     }
     TEST(l == 1);
     TEST(c == 1);
@@ -109,8 +109,8 @@ void errorTest() {
       u = 1;
       u.get<fcf::UnionMap>();
     } catch(const fcf::UnionException& e) {
-      l = e.line();
-      c = e.column();
+      l = (int)e.line();
+      c = (int)e.column();
     }
     TEST(l == SIZE_MAX);
     TEST(c == SIZE_MAX);
@@ -124,8 +124,8 @@ void errorTest() {
     try {
       u.get<int>();
     } catch(const fcf::UnionException& e) {
-      l = e.line();
-      c = e.column();
+      l = (int)e.line();
+      c = (int)e.column();
     }
     TEST(l == SIZE_MAX);
     TEST(c == SIZE_MAX);

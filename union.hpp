@@ -170,7 +170,7 @@ namespace fcf {
     char      vmap[sizeof(UnionMap)];
   };
 
-  class FCF_UNION_DECL_EXPORT UnionException : public std::runtime_error {
+  class UnionException : public std::runtime_error {
     public:
       inline UnionException(const char* a_message)
         : runtime_error(a_message)
