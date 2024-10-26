@@ -50,5 +50,47 @@ void streamTest(){
     TEST(error == false);
     TEST(u == 1);
   }
+  {
+    std::stringstream ss("undefined");
+    fcf::Union u;
+    u.parse(ss);
+    TEST(u.is<fcf::Undefined>());
+  }
+  {
+    std::stringstream ss("undefined ");
+    fcf::Union u;
+    u.parse(ss);
+    TEST(u.is<fcf::Undefined>());
+  }
+  {
+    std::stringstream ss(" undefined ");
+    fcf::Union u;
+    u.parse(ss);
+    TEST(u.is<fcf::Undefined>());
+  }
+  {
+    std::stringstream ss(" null ");
+    fcf::Union u;
+    u.parse(ss);
+    TEST(u.is<fcf::Null>());
+  }
+  {
+    std::stringstream ss("null");
+    fcf::Union u;
+    u.parse(ss);
+    TEST(u.is<fcf::Null>());
+  }
+  {
+    std::stringstream ss(" \"123\" ");
+    fcf::Union u;
+    u.parse(ss);
+    TEST(u == "123");
+  }
+  {
+    std::stringstream ss(" [ 1, ] ");
+    fcf::Union u;
+    u.parse(ss);
+    TEST(u[0] == 1);
+  }
 }
 
