@@ -184,11 +184,15 @@ void unionMapTest() {
     TEST(ss.str() == expeted);
 
     fcf::Union u2;
+    ss.clear();
+    ss.seekg(0);
     u2.parse(ss);
     std::stringstream ss2;
     u2.stringify(ss2, so);
 
     fcf::Union u3;
+    ss.clear();
+    ss.seekg(0);
     u3.parse(ss);
 
     std::stringstream ss3;

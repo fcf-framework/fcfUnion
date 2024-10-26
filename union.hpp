@@ -405,8 +405,8 @@ namespace fcf {
           typedef std::basic_istream<char> value_type;
 
           SimpleConstResolver(std::basic_istream<char>& a_ref)
-            : _ref(a_ref)
-            , _index(0){
+            : _ref(a_ref) {
+            _ch = _ref.get();
           }
 
           inline std::basic_istream<char>& operator()(){
@@ -414,11 +414,11 @@ namespace fcf {
           }
 
           inline item_type read() {
-            return _ref.peek();
+            return _ch;
           }
 
           inline void next() {
-            _ref.get();
+            _ch = _ref.get();
           }
 
           inline bool end() {
@@ -426,7 +426,7 @@ namespace fcf {
           }
 
           std::basic_istream<char>&  _ref;
-          size_t                     _index;
+          item_type                  _ch;
         };
 
         template <typename Ty>
@@ -1065,8 +1065,7 @@ namespace fcf {
               if (i == 0){
                 ++i;
               } else {
-                FCF_THROW_OR_RESULT_ERROR(a_dstErrorMessage, "Incorrect number format");
-                return;
+                break;
               }
             } else  if (c >= (unsigned char)'0' && c <= (unsigned char)'9') {
               int v = c - (unsigned char)'0';

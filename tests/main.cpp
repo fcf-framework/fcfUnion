@@ -13,8 +13,10 @@ void orderTest();
 void isTest();
 void findTest();
 void eraseTest();
+void streamTest();
 
 int main(int a_argc, char* a_argv[]){
+
   cmpTest();
   unionIteratorTest();
   unionCopyTest();
@@ -26,6 +28,7 @@ int main(int a_argc, char* a_argv[]){
   isTest();
   findTest();
   eraseTest();
+  streamTest();
 
   std::cout << "Complete!" << std::endl;
   return 0;
