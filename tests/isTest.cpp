@@ -37,7 +37,19 @@ void isTest() {
   {
     fcf::Union u("true");
     TEST(u.isCompatible<bool>(true) == true);
-    TEST(u.isCompatible<int>(true) == false);
+    TEST(u.isCompatible<int>(true) == true);
+    TEST(u.get<int>() == 1);
+    TEST(u.isCompatible<fcf::Undefined>(true) == false);
+    TEST(u.isCompatible<fcf::Null>(true) == false);
+  }
+  {
+    fcf::Union u("false");
+    TEST(u.isCompatible<bool>(true) == true);
+    TEST(u.isCompatible<int>(true) == true);
+    TEST(u.get<int>() == 0);
+    TEST(fcf::Union(1.0).get<bool>() == true);
+    TEST(fcf::Union(0.0).get<bool>() == false);
+    TEST(fcf::Union("false").get<bool>() == false);
     TEST(u.isCompatible<fcf::Undefined>(true) == false);
     TEST(u.isCompatible<fcf::Null>(true) == false);
   }

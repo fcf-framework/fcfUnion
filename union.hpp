@@ -1459,13 +1459,30 @@ namespace fcf {
           }
         };
 
+        template <typename Ty, typename TResolver, typename TReceiver>
+        inline void convertStringToNumber(TResolver& a_resolver, TReceiver& a_receiver, bool a_inner, const char** a_dstErrorMessage) {
+          skipSpaces(a_resolver);
+          if (a_resolver.read() == 't' || a_resolver.read() == 'f') {
+            const char* error = 0;
+            bool b = parseBool(a_resolver, &error);
+            if (error) {
+              FCF_THROW_OR_RESULT_ERROR(a_dstErrorMessage, "Incorrect number format", a_resolver, false);
+              return;
+            }
+            a_receiver(b ? (Ty)1 : (Ty)0);
+            return;
+          } else {
+            Ty value = 0;
+            parseNumber(a_resolver, false, 0, 0, &value, (Ty*)0, (Ty*)0, a_dstErrorMessage);
+            a_receiver(value);
+          }
+        }
+
         template <>
         struct FCF_UNION_DECL_VISIBILITY_HIDDEN Converter<std::string, int, TNOP>{
           template <typename TResolver, typename TReceiver>
           inline void operator()(TResolver& a_resolver, TReceiver& a_receiver, bool a_inner, const char** a_dstErrorMessage) {
-            int value = 0;
-            parseNumber(a_resolver, false, 0, 0, &value, (int*)0, (int*)0, a_dstErrorMessage);
-            a_receiver(value);
+            convertStringToNumber<int>(a_resolver, a_receiver, a_inner, a_dstErrorMessage);
           }
         };
 
@@ -1473,9 +1490,7 @@ namespace fcf {
         struct FCF_UNION_DECL_VISIBILITY_HIDDEN Converter<std::string, long long, TNOP>{
           template <typename TResolver, typename TReceiver>
           inline void operator()(TResolver& a_resolver, TReceiver& a_receiver, bool a_inner, const char** a_dstErrorMessage) {
-            long long value = 0;
-            parseNumber(a_resolver, false, 0, 0, &value, (long long*)0, (long long*)0, a_dstErrorMessage);
-            a_receiver(value);
+            convertStringToNumber<long long>(a_resolver, a_receiver, a_inner, a_dstErrorMessage);
           }
         };
 
@@ -1483,9 +1498,7 @@ namespace fcf {
         struct FCF_UNION_DECL_VISIBILITY_HIDDEN Converter<std::string, unsigned long long, TNOP>{
           template <typename TResolver, typename TReceiver>
           inline void operator()(TResolver& a_resolver, TReceiver& a_receiver, bool a_inner, const char** a_dstErrorMessage) {
-            unsigned long long value = 0;
-            parseNumber(a_resolver, false, 0, 0, &value, (unsigned long long*)0, (unsigned long long*)0, a_dstErrorMessage);
-            a_receiver(value);
+            convertStringToNumber<unsigned long long>(a_resolver, a_receiver, a_inner, a_dstErrorMessage);
           }
         };
 
@@ -1493,9 +1506,7 @@ namespace fcf {
         struct FCF_UNION_DECL_VISIBILITY_HIDDEN Converter<std::string, unsigned int, TNOP>{
           template <typename TResolver, typename TReceiver>
           inline void operator()(TResolver& a_resolver, TReceiver& a_receiver, bool a_inner, const char** a_dstErrorMessage) {
-            unsigned int value = 0;
-            parseNumber(a_resolver, true, 0, 0, &value, (int*)0, (int*)0, a_dstErrorMessage);
-            a_receiver(value);
+            convertStringToNumber<unsigned int>(a_resolver, a_receiver, a_inner, a_dstErrorMessage);
           }
         };
 
@@ -1503,9 +1514,7 @@ namespace fcf {
         struct FCF_UNION_DECL_VISIBILITY_HIDDEN Converter<std::string, double, TNOP>{
           template <typename TResolver, typename TReceiver>
           inline void operator()(TResolver& a_resolver, TReceiver& a_receiver, bool a_inner, const char** a_dstErrorMessage) {
-            double value = 0;
-            parseNumber(a_resolver, false, 0, 0, &value, (int*)0, (int*)0, a_dstErrorMessage);
-            a_receiver(value);
+            convertStringToNumber<double>(a_resolver, a_receiver, a_inner, a_dstErrorMessage);
           }
         };
 
@@ -3492,7 +3501,7 @@ namespace fcf {
             std::string& string = *(std::string*)(const std::string*)&value.vstring[0];
             fcf::Details::NConvert::ConstResolver<std::string> r{string, false};
             if (Details::NConvert::parseValue(r, u, &error) && !error) {
-              return u.isCompatible(type, true);
+              return u.isCompatible(a_type, true);
             }
           }
         }
