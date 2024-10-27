@@ -280,7 +280,7 @@ Class of iterator of children of the object [fcf::Union](#description_union)
 
 ##### Methods
 
-* `Union key()` - Child element name/key
+* `Union key() const` - Child element name/key
 * `Union* operator->()` - Gets a pointer to the child element
 * `Union& operator()` - Gets a reference to a child element
 *  `Union&  value()` - Gets a reference to a child element
@@ -296,7 +296,7 @@ Class of const iterator of children of the object [fcf::Union](#description_unio
 
 ##### Methods
 
-* `Union key()` - Child element name/key
+* `Union key() const` - Child element name/key
 * `const Union* operator->()` - Gets a pointer to the child element
 * `const Union& operator()` - Gets a reference to a child element
 *  `const Union&  value()` - Gets a reference to a child element
@@ -319,12 +319,12 @@ The class object contains a value that has a type - one of the enum [fcf::UnionT
 * --- Iterators ---
 * `fcf::Union::iterator begin()` - Returns an [iterator](#description_union__iterator) to the first child element
 * `fcf::Union::iterator end()` - Returns an [iterator](#description_union__iterator) to end
-* `fcf::Union::const_iterator cbegin()` - Returns an [const iterator](#description_union__const_iterator) to the first child element
-* `fcf::Union::const_iterator cend()` - Returns an [const iterator](#description_union__const_iterator) to end
+* `fcf::Union::const_iterator cbegin() const` - Returns an [const iterator](#description_union__const_iterator) to the first child element
+* `fcf::Union::const_iterator cend() const` - Returns an [const iterator](#description_union__const_iterator) to end
 * `fcf::Union::iterator obegin()` - Returns an [iterator](#description_union__iterator) to the first child element, preserving sequence. If the `fcf::Union` object is an `fcf::UnionMap`, then the elements are iterated in the order they were added. For other types the method is similar to `begin()`.
 * `fcf::Union::iterator oend()` - Returns an [iterator](#description_union__iterator) to end
-* `fcf::Union::const_iterator cobegin()` - Returns an [const iterator](#description_union__const_iterator) to the first child element, preserving sequence. If the `fcf::Union` object is an `fcf::UnionMap`, then the elements are iterated in the order they were added. For other types the method is similar to `cbegin()`.
-* `fcf::Union::const_iterator coend()` - Returns an [const iterator](#description_union__const_iterator) to end
+* `fcf::Union::const_iterator cobegin() const` - Returns an [const iterator](#description_union__const_iterator) to the first child element, preserving sequence. If the `fcf::Union` object is an `fcf::UnionMap`, then the elements are iterated in the order they were added. For other types the method is similar to `cbegin()`.
+* `fcf::Union::const_iterator coend() const` - Returns an [const iterator](#description_union__const_iterator) to end
 
 
 

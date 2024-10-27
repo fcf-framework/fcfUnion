@@ -241,7 +241,7 @@ namespace fcf {
         bool operator !=(const base_iterator& a_it) const;
         base_iterator& operator++();
         base_iterator operator++(int);
-        Union key();
+        Union key() const;
 
       protected:
         bool _isend() const;
@@ -3005,7 +3005,7 @@ namespace fcf {
       return *operator->();
     }
 
-    Union Union::base_iterator::key() {
+    Union Union::base_iterator::key() const {
       Union u;
       if (_vitype == IT_VECTOR) {
         UnionVector::const_iterator& it = *(UnionVector::const_iterator*)(void*)&_viiterator.vivector[0];
