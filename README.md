@@ -316,7 +316,11 @@ The class object contains a value that has a type - one of the enum [fcf::UnionT
 * `Union()` - Initializes to `fcf::undefined`
 * `Union(UnionType a_type)` - Initializes a new object with the given type.
 * `template <typename Ty> Union(const Ty& a_value)` - Initializes a new object with the given value
-* 
+*
+* --- Base methods ---
+* `template <typename Ty> bool is() const` - Returns `true` if `Ty` type is equal to the type of the stored object value
+* `bool is(fcf::UnionType a_type) const` - Returns `true` if type index `a_type` is equal to the type of the stored object value
+*
 * --- Accessing child elements ---
 * `size_t size() const` - Returns the number of child elements
 * `fcf::Union::iterator find(fcf::Union a_key)` - Searches for a child element by key. Returns an iterator to the found element. If the element is not found, returns an iterator to the end (`Union::end()`)

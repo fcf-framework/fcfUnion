@@ -349,7 +349,10 @@ namespace fcf {
     FCF_UNION_DECL_EXPORT void set(const Union& a_value);
 
     template <typename Ty>
-    FCF_UNION_DECL_EXPORT void set();
+    inline void set() 
+    { set((UnionType)fcf::Details::NUnion::TypeHelper<Ty>::type_index); }
+
+    FCF_UNION_DECL_EXPORT void set(UnionType a_type);
 
     template <typename Ty>
     inline Union& operator=(const Ty& a_value)
@@ -1839,6 +1842,9 @@ namespace fcf {
   #ifdef FCF_UNION_IMPLEMENTATION
     namespace Details {
       namespace NUnion {
+        template <typename Ty>
+        struct ExecutorSetArgs;
+
 
         enum ExecutorIndexs{
           EI_CONST_GET,
@@ -1965,7 +1971,8 @@ namespace fcf {
               }
               Details::NUnion::Selector::select<void, Details::NUnion::EI_DESTROY, TNOP>(a_callData.type, a_callData.value);
               a_callData.type = UT_UNDEFINED;
-              Details::NUnion::Executor<fcf::Details::NUnion::EI_SET, Ty, TNOP>()(type, a_callData.value, newValue);
+              Details::NUnion::ExecutorSetArgs<Ty> esa{type, a_callData.value, newValue};
+              Details::NUnion::Executor<fcf::Details::NUnion::EI_SET, Ty, TNOP>()(esa);
               a_callData.type = type;
             }
             return *(Ty*)(void*)&a_callData.value.vint;
@@ -1986,38 +1993,45 @@ namespace fcf {
         // Set
         ///////////////////////////////////////
         template <typename Ty>
+        struct ExecutorSetArgs {
+          UnionType&  dstType;
+          UnionValue& dstValue;
+          const Ty&   value;
+        };
+        
+        template <typename Ty>
         struct FCF_UNION_DECL_VISIBILITY_HIDDEN Executor<EI_SET, Ty, TNOP>{
-          template <typename TValue >
-          inline void operator()(UnionType& a_dstType,  UnionValue& a_dstUValueu, const TValue& a_value){
-            a_dstType = (UnionType)Details::NUnion::TypeHelper<Ty>::type_index;
-            *((Ty*)(void*)&a_dstUValueu.vint) = a_value;
+          template <typename TData>
+          inline void operator()(TData& a_data){
+            a_data.dstType = (UnionType)Details::NUnion::TypeHelper<Ty>::type_index;
+            *((Ty*)(void*)&a_data.dstValue.vint) = a_data.value;
           }
         };
 
         template <>
         struct FCF_UNION_DECL_VISIBILITY_HIDDEN Executor<fcf::Details::NUnion::EI_SET, std::string, TNOP>{
-          template <typename Ty >
-          inline void operator()(UnionType& a_dstType, UnionValue& a_dstUValueu, const Ty& a_value){
-            a_dstType = UT_STRING;
-            new ((void*)&a_dstUValueu.vstring)std::string(a_value);
+          template <typename TData>
+          inline void operator()(TData& a_data){
+            a_data.dstType = UT_STRING;
+            new ((void*)&a_data.dstValue.vstring[0])std::string(a_data.value);
           }
         };
 
         template <>
         struct FCF_UNION_DECL_VISIBILITY_HIDDEN Executor<fcf::Details::NUnion::EI_SET, UnionVector, TNOP>{
-          template <typename Ty >
-          inline void operator()(UnionType& a_dstType, UnionValue& a_dstUValueu, const Ty& a_value){
-            a_dstType = UT_VECTOR;
-            new ((void*)&a_dstUValueu.vstring)UnionVector(a_value);
+          template <typename TData>
+          inline void operator()(TData& a_data){
+            a_data.dstType = UT_VECTOR;
+            new ((void*)&a_data.dstValue.vstring[0])UnionVector(a_data.value);
           }
         };
 
         template <>
         struct FCF_UNION_DECL_VISIBILITY_HIDDEN Executor<fcf::Details::NUnion::EI_SET, UnionMap, TNOP>{
-          template <typename Ty >
-          inline void operator()(UnionType& a_dstType, UnionValue& a_dstUValueu, const Ty& a_value){
-            a_dstType = UT_MAP;
-            new ((void*)&a_dstUValueu.vstring)UnionMap(a_value);
+          template <typename TData>
+          inline void operator()(TData& a_data){
+            a_data.dstType = UT_MAP;
+            new ((void*)&a_data.dstValue.vstring[0])UnionMap(a_data.value);
           }
         };
 
@@ -3137,7 +3151,8 @@ namespace fcf {
     Union::Union(const Ty& a_value)
         : type(UT_UNDEFINED), orderc(0), order(0) {
         typedef typename Details::NUnion::TypeHelper<Ty>::far_type far_type;
-        Details::NUnion::Executor<fcf::Details::NUnion::EI_SET, far_type, TNOP>()(type, value, a_value);
+        Details::NUnion::ExecutorSetArgs<Ty> esa{type, value, a_value};
+        Details::NUnion::Executor<fcf::Details::NUnion::EI_SET, far_type, TNOP>()(esa);
     }
   #endif // #ifdef FCF_UNION_IMPLEMENTATION
   FCF_UNION_DECL_TEMPLATE_EXTERN template FCF_UNION_DECL_EXPORT Union::Union(const Undefined& a_value);
@@ -3161,7 +3176,8 @@ namespace fcf {
     Union::Union(const char* a_value)
       : type(UT_UNDEFINED), orderc(0), order(0) {
       typedef typename Details::NUnion::TypeHelper<const char*>::far_type far_type;
-      Details::NUnion::Executor<fcf::Details::NUnion::EI_SET, far_type, TNOP>()(type, value, a_value);
+      Details::NUnion::ExecutorSetArgs<const char*> esa{type, value, a_value};
+      Details::NUnion::Executor<fcf::Details::NUnion::EI_SET, far_type, TNOP>()(esa);
     }
   #endif // #ifdef FCF_UNION_IMPLEMENTATION
 
@@ -3640,7 +3656,8 @@ namespace fcf {
     Details::NUnion::Selector::select<void, Details::NUnion::EI_DESTROY, TNOP>(type, value);
     type = UT_UNDEFINED;
     far_type newValue = Details::NUnion::TypeHelper<Ty>::farValue(a_value);
-    Details::NUnion::Executor<fcf::Details::NUnion::EI_SET, far_type, TNOP>()(type, value, newValue);
+    Details::NUnion::ExecutorSetArgs<far_type> esa{type, value, newValue};
+    Details::NUnion::Executor<fcf::Details::NUnion::EI_SET, far_type, TNOP>()(esa);
   }
   #endif // #ifdef FCF_UNION_IMPLEMENTATION
   FCF_UNION_DECL_TEMPLATE_EXTERN template FCF_UNION_DECL_EXPORT void Union::set<Undefined>(const Undefined&);
@@ -3680,30 +3697,18 @@ namespace fcf {
   #endif // #ifdef FCF_UNION_IMPLEMENTATION
 
   #ifdef FCF_UNION_IMPLEMENTATION
-    template <typename Ty>
-    void Union::set() {
-      typedef typename Details::NUnion::TypeHelper<Ty>::far_type far_type;
+    void Union::set(UnionType a_type) {
       Details::NUnion::Selector::select<void, Details::NUnion::EI_DESTROY, TNOP>(type, value);
       type = UT_UNDEFINED;
-      Details::NUnion::Executor<fcf::Details::NUnion::EI_SET, far_type, TNOP>()(type, value, Details::NUnion::TypeHelper<far_type>::init());
+      struct CallData{
+        UnionValue& destination;
+      };
+      CallData cd{value};
+      Details::NUnion::Selector::select<void, Details::NUnion::EI_INITIALIZE, TNOP>(a_type, cd);
+      type = a_type;
     }
-  #endif // #ifdef FCF_UNION_IMPLEMENTATION
-  FCF_UNION_DECL_TEMPLATE_EXTERN template FCF_UNION_DECL_EXPORT void Union::set<Undefined>();
-  FCF_UNION_DECL_TEMPLATE_EXTERN template FCF_UNION_DECL_EXPORT  void Union::set<Null>();
-  FCF_UNION_DECL_TEMPLATE_EXTERN template FCF_UNION_DECL_EXPORT void Union::set<bool>();
-  FCF_UNION_DECL_TEMPLATE_EXTERN template FCF_UNION_DECL_EXPORT  void Union::set<int>();
-  FCF_UNION_DECL_TEMPLATE_EXTERN template FCF_UNION_DECL_EXPORT  void Union::set<unsigned int>();
-  FCF_UNION_DECL_TEMPLATE_EXTERN template FCF_UNION_DECL_EXPORT void Union::set<long>();
-  FCF_UNION_DECL_TEMPLATE_EXTERN template FCF_UNION_DECL_EXPORT  void Union::set<unsigned long>();
-  FCF_UNION_DECL_TEMPLATE_EXTERN template FCF_UNION_DECL_EXPORT void Union::set<long long>();
-  FCF_UNION_DECL_TEMPLATE_EXTERN template FCF_UNION_DECL_EXPORT void Union::set<unsigned long long>();
-  FCF_UNION_DECL_TEMPLATE_EXTERN template FCF_UNION_DECL_EXPORT void Union::set<double>();
-  FCF_UNION_DECL_TEMPLATE_EXTERN template FCF_UNION_DECL_EXPORT  void Union::set<std::string>();
-  FCF_UNION_DECL_TEMPLATE_EXTERN template FCF_UNION_DECL_EXPORT  void Union::set<ConstCharPtr>();
-  FCF_UNION_DECL_TEMPLATE_EXTERN template FCF_UNION_DECL_EXPORT void Union::set<CharPtr>();
-  FCF_UNION_DECL_TEMPLATE_EXTERN template FCF_UNION_DECL_EXPORT  void Union::set<UnionVector>();
-  FCF_UNION_DECL_TEMPLATE_EXTERN template FCF_UNION_DECL_EXPORT void Union::set<UnionMap>();
-
+  #endif
+  
   #ifdef FCF_UNION_IMPLEMENTATION
     template <typename Ty>
     bool Union::equal(const Ty& a_value, bool a_strict) const {
