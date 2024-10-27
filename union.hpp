@@ -317,10 +317,14 @@ namespace fcf {
     template <typename Ty>
     FCF_UNION_DECL_EXPORT bool is() const;
 
-    inline bool is(UnionType a_type) const                          { return type == a_type; }
+    inline bool is(UnionType a_type) const
+    { return type == a_type; }
 
     template <typename Ty>
-    FCF_UNION_DECL_EXPORT bool isCompatible(bool a_stringifyMode = false) const;
+    inline bool isCompatible(bool a_stringifyMode = false) const
+    { return isCompatible((UnionType)fcf::Details::NUnion::TypeHelper<Ty>::type_index, a_stringifyMode); }
+
+    FCF_UNION_DECL_EXPORT bool isCompatible(UnionType a_type, bool a_stringifyMode = false) const;
 
     FCF_UNION_DECL_EXPORT void parse(const std::string& a_source);
 
@@ -339,7 +343,8 @@ namespace fcf {
     template <typename Ty>
     FCF_UNION_DECL_EXPORT void set(const Ty& a_value);
 
-    inline void set(const char* a_value)                            { set<const char*>(a_value); }
+    inline void set(const char* a_value)
+    { set<const char*>(a_value); }
 
     FCF_UNION_DECL_EXPORT void set(const Union& a_value);
 
@@ -347,34 +352,41 @@ namespace fcf {
     FCF_UNION_DECL_EXPORT void set();
 
     template <typename Ty>
-    inline Union& operator=(const Ty& a_value)                      { set(a_value); return *this; }
+    inline Union& operator=(const Ty& a_value)
+    { set(a_value); return *this; }
 
-    inline Union& operator=(const Union& a_union)                   { set(a_union); return *this; }
+    inline Union& operator=(const Union& a_union)
+    { set(a_union); return *this; }
 
     template <typename Ty>
     FCF_UNION_DECL_EXPORT bool equal(const Ty& a_value, bool a_strict) const;
 
-    inline bool equal(const char* a_value, bool a_strict) const     { return equal<const char*>(a_value, a_strict); }
+    inline bool equal(const char* a_value, bool a_strict) const
+    { return equal<const char*>(a_value, a_strict); }
 
     FCF_UNION_DECL_EXPORT bool equal(const Union& a_value, bool a_strict) const;
 
     template <typename Ty>
     FCF_UNION_DECL_EXPORT bool lessStr(const Ty& a_value) const;
 
-    inline bool lessStr(const char* a_value) const                  { return lessStr<const char*>(a_value); }
+    inline bool lessStr(const char* a_value) const
+    { return lessStr<const char*>(a_value); }
 
     FCF_UNION_DECL_EXPORT bool lessStr(Union& a_value) const;
 
     FCF_UNION_DECL_EXPORT bool lessStr(const Union& a_value) const;
 
     template <typename Ty>
-    inline bool operator==(const Ty& a_value) const                 { return equal(a_value, false); }
+    inline bool operator==(const Ty& a_value) const
+    { return equal(a_value, false); }
 
     template <typename Ty>
-    inline bool operator!=(const Ty& a_value)                       { return !equal(a_value, false); }
+    inline bool operator!=(const Ty& a_value)
+    { return !equal(a_value, false); }
 
     template <typename Ty>
-    inline explicit operator Ty() const                             { return get<Ty>(); }
+    inline explicit operator Ty() const
+    { return get<Ty>(); }
   };
 
   #ifdef FCF_UNION_IMPLEMENTATION
@@ -3461,56 +3473,33 @@ namespace fcf {
   FCF_UNION_DECL_TEMPLATE_EXTERN template FCF_UNION_DECL_EXPORT bool Union::is<UnionMap>() const;
 
   #ifdef FCF_UNION_IMPLEMENTATION
-    template <typename Ty>
-    bool Union::isCompatible(bool a_stringifyMode) const{
-      typedef typename Details::NUnion::TypeHelper<Ty>::far_type far_type;
-      int ti = Details::NUnion::TypeHelper<Ty>::type_index;
-      if ((ti == UT_BOOL || (ti >= FIRST_NUMBER_TYPE && ti <= LAST_NUMBER_TYPE)) &&
+    bool Union::isCompatible(UnionType a_type, bool a_stringifyMode) const {
+      if ((a_type == UT_BOOL || (a_type >= FIRST_NUMBER_TYPE && a_type <= LAST_NUMBER_TYPE)) &&
           (type == UT_BOOL || (type >= FIRST_NUMBER_TYPE  && type <= LAST_NUMBER_TYPE))
           ) {
         return true;
       } else {
-        if (ti == type) {
+        if (a_type== type) {
           return true;
         }
         if (a_stringifyMode) {
-          if (ti == UT_STRING) {
+          if (a_type == UT_STRING) {
             return true;
           }
           if (type == UT_STRING) {
+            Union u;
             const char* error = 0;
-            struct CallData{
-              typedef StringifyOptions options_type;
-              const UnionValue&       value;
-              const char**            error;
-              far_type                destination;
-              const StringifyOptions  options;
-            };
-            CallData cd{value, &error};
-            Details::NUnion::Selector::select<void, Details::NUnion::EI_CONST_GET, far_type>(type, cd);
-            return !error;
+            std::string& string = *(std::string*)(const std::string*)&value.vstring[0];
+            fcf::Details::NConvert::ConstResolver<std::string> r{string, false};
+            if (Details::NConvert::parseValue(r, u, &error) && !error) {
+              return u.isCompatible(type, true);
+            }
           }
         }
         return false;
       }
     }
-  #endif // #ifdef FCF_UNION_IMPLEMENTATION
-  FCF_UNION_DECL_TEMPLATE_EXTERN template FCF_UNION_DECL_EXPORT bool Union::isCompatible<Undefined>(bool) const;
-  FCF_UNION_DECL_TEMPLATE_EXTERN template FCF_UNION_DECL_EXPORT bool Union::isCompatible<Null>(bool) const;
-  FCF_UNION_DECL_TEMPLATE_EXTERN template FCF_UNION_DECL_EXPORT bool Union::isCompatible<bool>(bool) const;
-  FCF_UNION_DECL_TEMPLATE_EXTERN template FCF_UNION_DECL_EXPORT bool Union::isCompatible<int>(bool) const;
-  FCF_UNION_DECL_TEMPLATE_EXTERN template FCF_UNION_DECL_EXPORT bool Union::isCompatible<unsigned int>(bool) const;
-  FCF_UNION_DECL_TEMPLATE_EXTERN template FCF_UNION_DECL_EXPORT bool Union::isCompatible<long>(bool) const;
-  FCF_UNION_DECL_TEMPLATE_EXTERN template FCF_UNION_DECL_EXPORT bool Union::isCompatible<unsigned long>(bool) const;
-  FCF_UNION_DECL_TEMPLATE_EXTERN template FCF_UNION_DECL_EXPORT bool Union::isCompatible<long long>(bool) const;
-  FCF_UNION_DECL_TEMPLATE_EXTERN template FCF_UNION_DECL_EXPORT bool Union::isCompatible<unsigned long long>(bool) const;
-  FCF_UNION_DECL_TEMPLATE_EXTERN template FCF_UNION_DECL_EXPORT bool Union::isCompatible<double>(bool) const;
-  FCF_UNION_DECL_TEMPLATE_EXTERN template FCF_UNION_DECL_EXPORT bool Union::isCompatible<float>(bool) const;
-  FCF_UNION_DECL_TEMPLATE_EXTERN template FCF_UNION_DECL_EXPORT bool Union::isCompatible<std::string>(bool) const;
-  FCF_UNION_DECL_TEMPLATE_EXTERN template FCF_UNION_DECL_EXPORT bool Union::isCompatible<char*>(bool) const;
-  FCF_UNION_DECL_TEMPLATE_EXTERN template FCF_UNION_DECL_EXPORT bool Union::isCompatible<const char*>(bool) const;
-  FCF_UNION_DECL_TEMPLATE_EXTERN template FCF_UNION_DECL_EXPORT bool Union::isCompatible<UnionVector>(bool) const;
-  FCF_UNION_DECL_TEMPLATE_EXTERN template FCF_UNION_DECL_EXPORT bool Union::isCompatible<UnionMap>(bool) const;
+  #endif
 
   #ifdef FCF_UNION_IMPLEMENTATION
     void Union::parse(const std::string& a_source) {
