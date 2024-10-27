@@ -327,7 +327,7 @@ The class object contains a value that has a type - one of the enum [fcf::UnionT
 *  `template <typename Ty> void set(const Ty& a_value)` - Sets a new value.
 *  `void set(const fcf::Union& a_value)` - Sets a new value.
 *  `template <typename Ty> void set()` - Sets a new empty value with the given type
-*  `void set(UnionType a_type)` - Sets a new empty value with the given type
+*  `void set(fcf::UnionType a_type)` - Sets a new empty value with the given type
 *  `template <typename Ty> Union& operator=(const Ty& a_value)` - Sets a new value.
 *  `Union& operator=(const fcf::Union& a_union)` - Sets a new value.
 *  
