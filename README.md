@@ -316,6 +316,18 @@ The class object contains a value that has a type - one of the enum [fcf::UnionT
 * `Union()` - Initializes to `fcf::undefined`
 * `Union(UnionType a_type)` - Initializes a new object with the given type.
 * `template <typename Ty> Union(const Ty& a_value)` - Initializes a new object with the given value
+* 
+* --- Accessing child elements ---
+* `size_t size() const` - Returns the number of child elements
+* `fcf::Union::iterator find(fcf::Union a_key)` - Searches for a child element by key. Returns an iterator to the found element. If the element is not found, returns an iterator to the end (`Union::end()`)
+* `fcf::Union& at(fcf::Union a_key)` - Returns a reference to a child element by key. If the child element is not found, then for fcf::UnionVector and fcf::UnionMap an element is created, and for other types an fcf::UnionException is thrown.
+* `const fcf::Union& cat(fcf::Union a_key) const` - Returns a const reference to a child element by key. If the child element is not found, an fcf::UnionException is thrown.
+* `fcf::Union& operator[](fcf::Union a_key)` - Returns a reference to a child element by key. If the child element is not found, then for fcf::UnionVector and fcf::UnionMap an element is created, and for other types an fcf::UnionException is thrown. 
+* `fcf::Union::iterator insert(fcf::Union a_value)` - Inserts a new child element into the object and returns a pointer to it. The key of the new element will be equal to its ordinal in the object - the size() value before decrementing.
+* `fcf::Union::iterator insert(fcf::Union a_key, fcf::Union a_value)` - Inserts a new child element into the object and returns a pointer to it.
+* `fcf::Union::iterator erase(const fcf::Union& a_key)` - Removes an element by key. Returns an iterator to the next element. If the element is not found, the function returns end()
+* `fcf::Union::iterator erase(const fcf::Union::iterator& a_iterator)` - Removes an element. Returns an iterator to the next element. If the element is not found, the function returns end().
+
 * --- Iterators ---
 * `fcf::Union::iterator begin()` - Returns an [iterator](#description_union__iterator) to the first child element
 * `fcf::Union::iterator end()` - Returns an [iterator](#description_union__iterator) to end
