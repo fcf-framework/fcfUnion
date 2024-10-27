@@ -294,7 +294,7 @@ namespace fcf {
 
     FCF_UNION_DECL_EXPORT const_iterator cend() const;
 
-    FCF_UNION_DECL_EXPORT size_t size();
+    FCF_UNION_DECL_EXPORT size_t size() const;
 
     FCF_UNION_DECL_EXPORT iterator find(Union a_key);
 
@@ -3243,7 +3243,7 @@ namespace fcf {
   #endif // #ifdef FCF_UNION_IMPLEMENTATION
 
   #ifdef FCF_UNION_IMPLEMENTATION
-    size_t Union::size(){
+    size_t Union::size() const{
       if (type == UT_VECTOR) {
         return ((UnionVector*)(void*)&value.vvector[0])->size();
       } else if (type == UT_MAP) {
