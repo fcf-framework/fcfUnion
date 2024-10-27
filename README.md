@@ -350,8 +350,8 @@ The class object contains a value that has a type - one of the enum [fcf::UnionT
 * --- Serialization methods ---
 *  `void stringify(std::string& a_dest, const fcf::StringifyOptions& a_options = fcf::StringifyOptions{}) const` - Saves the stored data to the variable `a_dest` in JSON format
 *  `void stringify(std::basic_ostream<char>& a_dest, const StringifyOptions& a_options = StringifyOptions{}) const` - Saves the stored data to the a_dest stream in JSON format
-*  `void parse(const std::string& a_source)` - Parses a JSON string
-*  `void parse(std::basic_istream<char>& a_source)` - Parses a JSON stream
+*  `void parse(const std::string& a_source)` - Parses a JSON string. The original format may have deviations from JSON (like JS): may contain comments; may contain a comma after the last element; object keys do not have to be enclosed in quotes.
+*  `void parse(std::basic_istream<char>& a_source)` - Parses a JSON stream. The original format may have deviations from JSON (like JS): may contain comments; may contain a comma after the last element; object keys do not have to be enclosed in quotes.
 *  
 * --- Accessing child elements ---
 * `size_t size() const` - Returns the number of child elements
