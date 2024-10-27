@@ -6,6 +6,12 @@
 * [Brief description](#short_description)
 * [Including headers in an executable](#including_headers_executable)
 * [Creating a shared library with the Union class](#creating_shared_library)
+* [Description of types and methods](#description_types_and_methods)
+	* [Enum fcf::UnionType](#description_union_type)
+	* [Class fcf::Union](#description_union)
+
+
+
 
 <a href="https://nowpayments.io/donation?api_key=9E422CC-88M4J1V-H0S6M1Y-TZ7FPYX" target="_blank">
  <img src="https://nowpayments.io/images/embeds/donation-button-white.svg" alt="Cryptocurrency & Bitcoin donation button by NOWPayments" style="    max-width: 100%;">
@@ -245,9 +251,34 @@ target_compile_definitions(example003 PRIVATE FCF_UNION_IMPORT)
 target_link_libraries(example003 PRIVATE "example003l")
 ```
 
+<a name="description_types_and_methods"></a>
+### Description of types and methods
 
+<a name="description_union_type"></a>
+#### Enum fcf::UnionType
 
+Enum of integer type identifiers stored by the `fcf::Union` class
 
+* `UT_UNDEFINED` - `fcf::Undefined` type
+* `UT_NULL` - `fcf::Null` type
+* `UT_INT` - `int` type
+* `UT_UINT` - `unsigned int` type
+* `UT_LONGLONG` - `long long` type
+* `UT_ULONGLONG` - `unsigned long long` type
+* `UT_DOUBLE` - `double` type
+* `UT_BOOL` - `bool` type
+* `UT_STRING` - `std::string` type
+* `UT_VECTOR` - `fcf::UnionVector` type ( `std::vector<fcf::Union>` )
+* `UT_MAP` - - `fcf::UnionMap` type ( `std::map<fcf::Union, fcf::Union, fcf::MapLess>*` ),
+
+<a name="description_union"></a>
+#### Class fcf::Union
+
+##### Methods
+
+* `Union()` - Initializes to `fcf::undefined`
+* `Union(UnionType a_type)` - Initializes a new object with the given type.
+* `template <typename Ty> Union(const Ty& a_value)` - Initializes a new object with the given value
 
 
 
