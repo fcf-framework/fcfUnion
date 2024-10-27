@@ -324,6 +324,12 @@ The class object contains a value that has a type - one of the enum [fcf::UnionT
 *  `bool isCompatible(UnionType a_type, bool a_stringifyMode = false) const` - Returns true if the stored value can be represented as type `a_type`. If the `a_stringifyMode` argument is true, the possibility of converting from string type to type `a_type` is also checked.
 *  `template <typename Ty> Ty get() const` - Returns the stored value in the Ty type representation. If the stored value cannot be converted, an `fcf::UnionException` exception is thrown.
 *  `template <typename Ty> Details::NUnion::TypeHelper<Ty>::far_type& ref()` - Returns a reference to the stored value. If the stored value differs from the requested type, the stored data type is converted to the closest available type and a reference to the stored value is returned. If the conversion process fails, the object is initialized to an empty value.
+*  `template <typename Ty> void set(const Ty& a_value)` - Sets a new value.
+*  `void set(const Union& a_value)` - Sets a new value.
+*  `template <typename Ty> void set()` - Sets a new empty value with the given type
+*  `void set(UnionType a_type)` - Sets a new empty value with the given type
+*  `template <typename Ty> Union& operator=(const Ty& a_value)` - Sets a new value.
+*  `Union& operator=(const Union& a_union)` - Sets a new value.
 *  
 * --- Accessing child elements ---
 * `size_t size() const` - Returns the number of child elements
