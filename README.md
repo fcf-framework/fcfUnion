@@ -8,6 +8,7 @@
 * [Creating a shared library with the Union class](#creating_shared_library)
 * [Description of types and methods](#description_types_and_methods)
 	* [Enum fcf::UnionType](#description_union_type)
+	* [Struct fcf::StringifyOptions](#description_stringify_options)
 	* [Class fcf::Union::iterator](#description_union__iterator)
 	* [Class fcf::Union::const_iterator](#description_union__const_iterator)
 	* [Class fcf::Union](#description_union)
@@ -272,6 +273,17 @@ Enum of integer type identifiers stored by the `fcf::Union` class
 * `UT_STRING` - `std::string` type
 * `UT_VECTOR` - `fcf::UnionVector` type ( `std::vector<fcf::Union>` )
 * `UT_MAP` - - `fcf::UnionMap` type ( `std::map<fcf::Union, fcf::Union, fcf::MapLess>` ),
+
+<a name="description_stringify_options"></a>
+#### Struct fcf::StringifyOptions
+
+Structure describing the parameters of translation into string format/JSON
+
+##### Properties
+
+* `bool friendly = false` - If `true`, then output is generated with line breaks and indentation.
+* `const char* tab = "  "` - A line containing a tab.
+* `fcf::StringDataFormat mode = SF_JSON` - Output format. SF_JSON - Json format. SF_VALUE - the value format is similar to SF_JSON, if the root element is a string, then the value will not be enclosed in quotation marks when output.
 
 <a name="description_union__iterator"></a>
 #### Class fcf::Union::iterator
