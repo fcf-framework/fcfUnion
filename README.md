@@ -271,7 +271,7 @@ Enum of integer type identifiers stored by the `fcf::Union` class
 * `UT_BOOL` - `bool` type
 * `UT_STRING` - `std::string` type
 * `UT_VECTOR` - `fcf::UnionVector` type ( `std::vector<fcf::Union>` )
-* `UT_MAP` - - `fcf::UnionMap` type ( `std::map<fcf::Union, fcf::Union, fcf::MapLess>*` ),
+* `UT_MAP` - - `fcf::UnionMap` type ( `std::map<fcf::Union, fcf::Union, fcf::MapLess>` ),
 
 <a name="description_union__iterator"></a>
 #### Class fcf::Union::iterator
