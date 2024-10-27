@@ -312,9 +312,11 @@ The class object contains a value that has a type - one of the enum [fcf::UnionT
 
 ##### Methods
 
+* --- Constructors ---
 * `Union()` - Initializes to `fcf::undefined`
 * `Union(UnionType a_type)` - Initializes a new object with the given type.
 * `template <typename Ty> Union(const Ty& a_value)` - Initializes a new object with the given value
+* --- Iterators ---
 * `fcf::Union::iterator begin()` - Returns an [iterator](#description_union__iterator) to the first child element
 * `fcf::Union::iterator end()` - Returns an [iterator](#description_union__iterator) to end
 * `fcf::Union::const_iterator cbegin()` - Returns an [const iterator](#description_union__const_iterator) to the first child element
