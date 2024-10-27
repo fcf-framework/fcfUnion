@@ -329,7 +329,7 @@ The class object contains a value that has a type - one of the enum [fcf::UnionT
 *  `template <typename Ty> void set()` - Sets a new empty value with the given type
 *  `void set(fcf::UnionType a_type)` - Sets a new empty value with the given type
 *  `template <typename Ty> fcf::Union& operator=(const Ty& a_value)` - Sets a new value.
-*  `Union& operator=(const fcf::Union& a_union)` - Sets a new value.
+*  `fcf::Union& operator=(const fcf::Union& a_union)` - Sets a new value.
 *  
 * --- Accessing child elements ---
 * `size_t size() const` - Returns the number of child elements
