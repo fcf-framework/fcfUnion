@@ -346,6 +346,12 @@ The class object contains a value that has a type - one of the enum [fcf::UnionT
 *  `template <typename Ty> bool equal(const Ty& a_value, bool a_strict) const` - Returns `true` if the stored value is equal to `a_value`. If `a_strict` is `true`, then a strict comparison is performed (types must match).
 * `template <typename Ty> bool operator==(const Ty& a_value) const` - Returns `true` if the stored value is equal to `a_value`. If `a_strict` is `true`, then a strict comparison is performed (types must match).
 * `template <typename Ty> bool operator!=(const Ty& a_value) const` - Returns `true` if the stored value is not equal to `a_value`. If `a_strict` is `true`, then a strict comparison is performed (types must match).
+*
+* --- Serialization methods ---
+*  `void stringify(std::string& a_dest, const fcf::StringifyOptions& a_options = fcf::StringifyOptions{}) const` - Saves the stored data to the variable `a_dest` in JSON format
+*  `void stringify(std::basic_ostream<char>& a_dest, const StringifyOptions& a_options = StringifyOptions{}) const` - Saves the stored data to the a_dest stream in JSON format
+*  `void parse(const std::string& a_source)` - Parses a JSON string
+*  `void parse(std::basic_istream<char>& a_source)` - Parses a JSON stream
 *  
 * --- Accessing child elements ---
 * `size_t size() const` - Returns the number of child elements
