@@ -317,6 +317,8 @@ namespace fcf {
     template <typename Ty>
     FCF_UNION_DECL_EXPORT bool is() const;
 
+    inline bool is(UnionType a_type) const                          { return type == a_type; }
+
     template <typename Ty>
     FCF_UNION_DECL_EXPORT bool isCompatible(bool a_stringifyMode = false) const;
 

@@ -19,6 +19,8 @@ void isTest() {
   TEST(fcf::Union(false).isCompatible<std::string>(false) == false);
   {
     fcf::Union u("1");
+    TEST(u.is<std::string>());
+    TEST(u.is(fcf::UT_STRING));
     TEST(u.isCompatible<int>(true));
     TEST(u.isCompatible<bool>(true) == true);
     TEST(u.isCompatible<fcf::Undefined>(true) == false);
