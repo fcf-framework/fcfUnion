@@ -327,7 +327,7 @@ The class object contains a value that has a type - one of the enum [fcf::UnionT
 * `fcf::Union::iterator insert(fcf::Union a_key, fcf::Union a_value)` - Inserts a new child element into the object and returns a pointer to it.
 * `fcf::Union::iterator erase(const fcf::Union& a_key)` - Removes an element by key. Returns an iterator to the next element. If the element is not found, the function returns end()
 * `fcf::Union::iterator erase(const fcf::Union::iterator& a_iterator)` - Removes an element. Returns an iterator to the next element. If the element is not found, the function returns end().
-
+*
 * --- Iterators ---
 * `fcf::Union::iterator begin()` - Returns an [iterator](#description_union__iterator) to the first child element
 * `fcf::Union::iterator end()` - Returns an [iterator](#description_union__iterator) to end
