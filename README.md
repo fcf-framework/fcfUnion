@@ -8,6 +8,8 @@
 * [Creating a shared library with the Union class](#creating_shared_library)
 * [Description of types and methods](#description_types_and_methods)
 	* [Enum fcf::UnionType](#description_union_type)
+	* [Class fcf::Union::iterator](#description_union__iterator)
+	* [Class fcf::Union::const_iterator](#description_union__const_iterator)
 	* [Class fcf::Union](#description_union)
 
 
@@ -271,15 +273,49 @@ Enum of integer type identifiers stored by the `fcf::Union` class
 * `UT_VECTOR` - `fcf::UnionVector` type ( `std::vector<fcf::Union>` )
 * `UT_MAP` - - `fcf::UnionMap` type ( `std::map<fcf::Union, fcf::Union, fcf::MapLess>*` ),
 
+<a name="description_union__iterator"></a>
+#### Class fcf::Union::iterator
+
+Class of iterator of children of the object [fcf::Union](#description_union)
+
+##### Methods
+
+* `Union key()` - Child element name/key
+* `Union* operator->()` - Gets a pointer to the child element
+* `Union& operator()` - Gets a reference to a child element
+*  `Union&  value()` - Gets a reference to a child element
+* `base_iterator& operator++()` - increment
+* `bool operator==(const base_iterator& a_it) const` - comparison
+* `bool operator!=(const base_iterator& a_it) const` - comparison
+
+
+<a name="description_union__const_iterator"></a>
+#### Class fcf::Union::cons_iterator
+
+Class of const iterator of children of the object [fcf::Union](#description_union)
+
+##### Methods
+
+* `Union key()` - Child element name/key
+* `const Union* operator->()` - Gets a pointer to the child element
+* `const Union& operator()` - Gets a reference to a child element
+*  `const Union&  value()` - Gets a reference to a child element
+* `base_iterator& operator++()` - increment
+* `bool operator==(const base_iterator& a_it) const` - comparison
+* `bool operator!=(const base_iterator& a_it) const` - comparison
+
+
 <a name="description_union"></a>
 #### Class fcf::Union
+
+The class object contains a value that has a type - one of the enum [fcf::UnionType](#description_union_type). The class object provides the functionality of bidirectional type conversion and the ability to JSON serialize.
 
 ##### Methods
 
 * `Union()` - Initializes to `fcf::undefined`
 * `Union(UnionType a_type)` - Initializes a new object with the given type.
 * `template <typename Ty> Union(const Ty& a_value)` - Initializes a new object with the given value
-
+* 
 
 
 
