@@ -20,12 +20,40 @@ void eraseTest(){
     TEST(u.get<std::string>() == "[\"value1\", \"value3\"]");
   }
   {
+    fcf::Union u(fcf::UT_VECTOR);
+    TEST(u.erase(10) == u.end());
+  }
+  {
+    fcf::Union u(fcf::UT_VECTOR);
+    TEST(u.erase("213") == u.end());
+  }
+  {
+    fcf::Union u(fcf::UT_VECTOR);
+    TEST(u.erase("asd") == u.end());
+  }
+  {
     fcf::Union u(fcf::UT_MAP);
     u.insert("value1");
     u.insert("value2");
     u.insert("value3");
     u.erase(1);
     TEST(u.get<std::string>() == "{\"0\": \"value1\", \"2\": \"value3\"}");
+  }
+  {
+    fcf::Union u(fcf::UT_MAP);
+    TEST(u.erase("213") == u.end());
+    TEST(u.erase(fcf::undefined) == u.end());
+    TEST(u.begin() == u.end());
+    TEST(u.erase(u.begin()) == u.end());
+    TEST(u.erase(u.end()) == u.end());
+  }
+  {
+    fcf::Union u(fcf::UT_INT);
+    TEST(u.erase("213") == u.end());
+    TEST(u.erase(fcf::undefined) == u.end());
+    TEST(u.begin() == u.end());
+    TEST(u.erase(u.begin()) == u.end());
+    TEST(u.erase(u.end()) == u.end());
   }
   {
     fcf::Union u(fcf::UT_MAP);

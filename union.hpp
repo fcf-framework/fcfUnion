@@ -3396,10 +3396,15 @@ namespace fcf {
           size_t index = vi - uv.begin();
           if (index < uv.size()){
             uv.erase(vi);
+            return iterator(uv.begin() + index, &uv);
+          } else {
+            end();
           }
-          return iterator(uv.begin() + index, &uv);
         }
       } else if (type == UT_MAP){
+        if (a_iterator == end()) {
+          return end();
+        }
         if (a_iterator._vitype == base_iterator::IT_MAP) {
           UnionMap::iterator mi = *(UnionMap::iterator*)(void*)&a_iterator._viiterator.vimap[0];
           UnionMap&          um = *(UnionMap*)(void*)&value.vmap[0];
