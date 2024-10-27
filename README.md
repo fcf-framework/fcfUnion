@@ -332,7 +332,8 @@ The class object contains a value that has a type - one of the enum [fcf::UnionT
 *  `template <typename Ty> fcf::Union& operator=(const Ty& a_value)` - Sets a new value.
 *  `fcf::Union& operator=(const fcf::Union& a_union)` - Sets a new value.
 *  `template <typename Ty> bool equal(const Ty& a_value, bool a_strict) const` - Returns `true` if the stored value is equal to `a_value`. If `a_strict` is `true`, then a strict comparison is performed (types must match).
-*  `bool equal(const Union& a_value, bool a_strict) const ` - Returns `true` if the stored value is equal to the stored value of `a_value`. If `a_strict` is `true`, then a strict comparison is performed (types must match).
+* `template <typename Ty> bool operator==(const Ty& a_value) const` - Returns `true` if the stored value is equal to `a_value`. If `a_strict` is `true`, then a strict comparison is performed (types must match).
+* `template <typename Ty> bool operator!=(const Ty& a_value) const` - Returns `true` if the stored value is not equal to `a_value`. If `a_strict` is `true`, then a strict comparison is performed (types must match).
 *  
 * --- Accessing child elements ---
 * `size_t size() const` - Returns the number of child elements
