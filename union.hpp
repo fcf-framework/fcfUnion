@@ -399,7 +399,7 @@ namespace fcf {
         FCF_UNION_DECL_VISIBILITY_HIDDEN bool isDouble(const std::string& a_str, bool a_unsigned);
 
         template <typename TFrom, typename TTo, typename TFormat = TNOP>
-        FCF_UNION_DECL_VISIBILITY_HIDDEN struct Converter{
+        struct FCF_UNION_DECL_VISIBILITY_HIDDEN Converter{
           template <typename TResolver, typename TReceiver>
           inline void operator()(TResolver& a_resolver, TReceiver& a_receiver, bool a_inner, const char** a_dstErrorMessage) {
             a_receiver((const TTo&)a_resolver());
@@ -3499,8 +3499,8 @@ namespace fcf {
 
   #ifdef FCF_UNION_IMPLEMENTATION
     bool Union::isCompatible(UnionType a_type, bool a_stringifyMode) const {
-      if ((a_type == UT_BOOL || (a_type >= FIRST_NUMBER_TYPE && a_type <= LAST_NUMBER_TYPE)) &&
-          (type == UT_BOOL || (type >= FIRST_NUMBER_TYPE  && type <= LAST_NUMBER_TYPE))
+      if ((a_type == UT_BOOL || ((int)a_type >= (int)FIRST_NUMBER_TYPE && (int)a_type <= (int)LAST_NUMBER_TYPE)) &&
+          (type == UT_BOOL || ((int)type >= (int)FIRST_NUMBER_TYPE  && (int)type <= (int)LAST_NUMBER_TYPE))
           ) {
         return true;
       } else {
