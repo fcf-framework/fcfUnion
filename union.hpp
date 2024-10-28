@@ -107,16 +107,16 @@ namespace fcf {
     FCF_UNION_DELC_EXTERN FCF_UNION_DECL_EXPORT Null null;
   #endif
 
-  enum StringDataFormat {
+  enum UnionFormat {
     SF_VALUE = 0,
     SF_JSON = 1
   };
 
-  struct StringifyOptions {
+  struct UnionStringifyOptions {
     bool             friendly;
     const char*      tab;
-    StringDataFormat mode;
-    StringifyOptions()
+    UnionFormat mode;
+    UnionStringifyOptions()
       : friendly(false)
       , tab("  ")
       , mode(SF_JSON) {
@@ -131,7 +131,7 @@ namespace fcf {
   }
   struct Union;
 
-  struct MapLess{
+  struct UnionMapLess{
     template <typename Ty>
     inline bool operator()(const Ty& a_left, const Ty& a_right) const{
       return a_left.lessStr(a_right);
@@ -139,7 +139,7 @@ namespace fcf {
   };
 
   typedef std::vector<Union> UnionVector;
-  typedef std::map<Union, Union, MapLess> UnionMap;
+  typedef std::map<Union, Union, UnionMapLess> UnionMap;
 
   enum UnionType{
     UT_UNDEFINED,
@@ -330,9 +330,9 @@ namespace fcf {
 
     FCF_UNION_DECL_EXPORT void parse(std::basic_istream<char>& a_source);
 
-    FCF_UNION_DECL_EXPORT void stringify(std::string& a_dest, const StringifyOptions& a_options = StringifyOptions{}) const;
+    FCF_UNION_DECL_EXPORT void stringify(std::string& a_dest, const UnionStringifyOptions& a_options = UnionStringifyOptions{}) const;
 
-    FCF_UNION_DECL_EXPORT void stringify(std::basic_ostream<char>& a_dest, const StringifyOptions& a_options = StringifyOptions{}) const;
+    FCF_UNION_DECL_EXPORT void stringify(std::basic_ostream<char>& a_dest, const UnionStringifyOptions& a_options = UnionStringifyOptions{}) const;
 
     template <typename Ty>
     FCF_UNION_DECL_EXPORT Ty get() const;
@@ -1957,11 +1957,11 @@ namespace fcf {
 
               const char* errorBuffer = 0;
               struct CallData{
-                typedef StringifyOptions options_type;
+                typedef UnionStringifyOptions options_type;
                 const UnionValue&        value;
                 Ty&                      destination;
                 const char**             error;
-                const StringifyOptions   options;
+                const UnionStringifyOptions   options;
               };
               CallData cd{a_callData.value, newValue, (a_callData.error ? a_callData.error : &errorBuffer)};
               Details::NUnion::Selector::select<void, Details::NUnion::EI_CONST_GET, Ty>(a_callData.type, cd);
@@ -2158,7 +2158,7 @@ namespace fcf {
   #endif // #ifdef FCF_UNION_IMPLEMENTATION
 
   inline std::basic_ostream<char>& operator<<(std::basic_ostream<char>& a_stream, const fcf::Union& a_unioun) {
-    fcf::StringifyOptions options;
+    fcf::UnionStringifyOptions options;
     options.mode = SF_VALUE;
     a_unioun.stringify(a_stream, options);
     return a_stream;
@@ -2257,12 +2257,12 @@ namespace fcf {
             return true;
           } else if (c == '[') {
             a_union.set(UnionVector());
-            Receiver<UnionVector, StringifyOptions> r{a_union.ref<UnionVector>(), StringifyOptions()};
+            Receiver<UnionVector, UnionStringifyOptions> r{a_union.ref<UnionVector>(), UnionStringifyOptions()};
             parseVector(a_resolver, r, a_dstErrorMessage);
             return true;
           } else if (c == '{') {
             a_union.set(UnionMap());
-            Receiver<UnionMap, StringifyOptions> r{a_union.ref<UnionMap>(), StringifyOptions()};
+            Receiver<UnionMap, UnionStringifyOptions> r{a_union.ref<UnionMap>(), UnionStringifyOptions()};
             parseMap(a_resolver, r, a_dstErrorMessage);
             return true;
           }
@@ -2662,10 +2662,10 @@ namespace fcf {
             if (leftCStr && rightCStr){
               return cmpStr(leftCStr, rightCStr) < 0;
             } else if (leftCStr && !rightCStr){
-              StringifyOptions so;
+              UnionStringifyOptions so;
               std::string rstr;
               fcf::Details::NConvert::ConstResolver< right_far_type > r{a_right};
-              fcf::Details::NConvert::Receiver<std::string, StringifyOptions> rc{rstr, so};
+              fcf::Details::NConvert::Receiver<std::string, UnionStringifyOptions> rc{rstr, so};
               const char* error = 0;
               fcf::Details::NConvert::Converter<right_far_type, std::string, TNOP>()(r, rc, false, &error);
               if (error) {
@@ -2673,10 +2673,10 @@ namespace fcf {
               }
               return cmpStr(leftCStr, rstr.c_str()) < 0;
             } else {
-              StringifyOptions so;
+              UnionStringifyOptions so;
               std::string lstr;
               fcf::Details::NConvert::ConstResolver< left_far_type > r{a_left};
-              fcf::Details::NConvert::Receiver<std::string, StringifyOptions> rc{lstr, so};
+              fcf::Details::NConvert::Receiver<std::string, UnionStringifyOptions> rc{lstr, so};
               const char* error = 0;
               fcf::Details::NConvert::Converter<left_far_type, std::string, TNOP>()(r, rc, false, &error);
               if (error) {
@@ -3554,14 +3554,14 @@ namespace fcf {
   #endif // #ifdef FCF_UNION_IMPLEMENTATION
 
   #ifdef FCF_UNION_IMPLEMENTATION
-    void Union::stringify(std::string& a_dest, const StringifyOptions& a_options) const {
+    void Union::stringify(std::string& a_dest, const UnionStringifyOptions& a_options) const {
       typedef std::string destination_type;
       Details::NUnion::StringCleaner<destination_type>()(a_dest);
       struct CallData{
-        typedef StringifyOptions options_type;
+        typedef UnionStringifyOptions options_type;
         const UnionValue&        value;
         destination_type&        destination;
-        const StringifyOptions&  options;
+        const UnionStringifyOptions&  options;
         const char**             error;
       };
       CallData cd{value, a_dest, a_options, 0};
@@ -3574,14 +3574,14 @@ namespace fcf {
   #endif // #ifdef FCF_UNION_IMPLEMENTATION
 
   #ifdef FCF_UNION_IMPLEMENTATION
-    void Union::stringify(std::basic_ostream<char>& a_dest, const StringifyOptions& a_options) const {
+    void Union::stringify(std::basic_ostream<char>& a_dest, const UnionStringifyOptions& a_options) const {
       typedef std::basic_ostream<char> destination_type;
       Details::NUnion::StringCleaner<destination_type>()(a_dest);
       struct CallData{
-        typedef StringifyOptions options_type;
+        typedef UnionStringifyOptions options_type;
         const UnionValue&        value;
         destination_type&        destination;
-        const StringifyOptions&  options;
+        const UnionStringifyOptions&  options;
         const char**             error;
       };
       CallData cd{value, a_dest, a_options, 0};
@@ -3597,11 +3597,11 @@ namespace fcf {
   template <typename Ty>
   Ty Union::get() const {
     struct CallData{
-      typedef StringifyOptions options_type;
-      const UnionValue&       value;
-      const char**            error;
-      Ty                      destination;
-      const StringifyOptions  options;
+      typedef UnionStringifyOptions options_type;
+      const UnionValue&             value;
+      const char**                  error;
+      Ty                            destination;
+      const UnionStringifyOptions   options;
     };
     CallData cd{value, 0};
     Details::NUnion::Selector::select<void, Details::NUnion::EI_CONST_GET, Ty>(type, cd);

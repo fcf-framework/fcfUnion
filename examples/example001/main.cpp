@@ -30,7 +30,7 @@ int main(int a_argc, const char* a_argv[]){
   uMap["key2"].insert(3);
   uMap["key3"] = "value3";
 
-  fcf::StringifyOptions so;
+  fcf::UnionStringifyOptions so;
   so.friendly = true;
   so.tab = "    ";
   std::stringstream ss;

@@ -168,7 +168,7 @@ void unionMapTest() {
     u["value"]["diff"] = fcf::Union(fcf::UnionMap{});
     u["value"]["diff"][1] = "test1";
     u["value"]["diff"][2] = "test2";
-    fcf::StringifyOptions so;
+    fcf::UnionStringifyOptions so;
     so.friendly = true;
     std::stringstream ss;
     u.stringify(ss, so);
@@ -341,7 +341,7 @@ void unionTypeTest() {
   }
   {
     fcf::Union uv(fcf::UnionVector{});
-    fcf::StringifyOptions so;
+    fcf::UnionStringifyOptions so;
     so.friendly = true;
     std::string str;
 
@@ -358,7 +358,7 @@ void unionTypeTest() {
   }
   {
     fcf::Union uv(fcf::UnionVector{});
-    fcf::StringifyOptions so;
+    fcf::UnionStringifyOptions so;
     so.friendly = true;
     std::string str;
 
@@ -376,7 +376,7 @@ void unionTypeTest() {
   {
     std::string expected;
     fcf::Union uv(fcf::UnionVector{});
-    fcf::StringifyOptions so;
+    fcf::UnionStringifyOptions so;
     so.friendly = true;
     std::string str;
 
@@ -425,7 +425,7 @@ void unionTypeTest() {
     std::string expected;
     std::stringstream ss;
     fcf::Union uv(fcf::UnionVector{});
-    fcf::StringifyOptions so;
+    fcf::UnionStringifyOptions so;
     so.friendly = true;
 
     uv.stringify(ss, so);
@@ -460,7 +460,7 @@ void unionTypeTest() {
   }
 
   {
-    fcf::StringifyOptions so;
+    fcf::UnionStringifyOptions so;
     fcf::Union uv("String");
     std::string output;
     uv.stringify(output, so);

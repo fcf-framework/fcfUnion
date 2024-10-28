@@ -8,7 +8,7 @@
 * [Creating a shared library with the Union class](#creating_shared_library)
 * [Description of types and methods](#description_types_and_methods)
 	* [Enum fcf::UnionType](#description_union_type)
-	* [Struct fcf::StringifyOptions](#description_stringify_options)
+	* [Struct fcf::StringifyOptions](#description_union_stringify_options)
 	* [Class fcf::Union::iterator](#description_union__iterator)
 	* [Class fcf::Union::const_iterator](#description_union__const_iterator)
 	* [Class fcf::Union](#description_union)
@@ -37,7 +37,7 @@ An fcf::Union object can store one of the following types:
 - `bool (Numerical equivalent: fcf::UT_BOOL),`
 - `std::string (Numerical equivalent: fcf::UT_STRING),`
 - `fcf::UnionVector /*std::vector<fcf::Union>*/ (Numerical equivalent: fcf::UT_VECTOR),`
-- `fcf::UnionMap /*std::map<fcf::Union, fcf::Union, fcf::MapLess>*/ (Numerical equivalent: fcf::UT_MAP),`
+- `fcf::UnionMap /*std::map<fcf::Union, fcf::Union, fcf::UnionMapLess>*/ (Numerical equivalent: fcf::UT_MAP),`
 
 The library is distributed in the form of header files and to start using it, you need to declare the implementation in one cpp file. This is done by including the union.hpp file with the declared `FCF_UNION_IMPLEMENTATION` macro, in other files with the included union.hpp, the `FCF_UNION_IMPLEMENTATION` macro is not needed
 
@@ -77,7 +77,7 @@ int main(int a_argc, const char* a_argv[]){
   uMap["key2"].insert(3);
   uMap["key3"] = "value3";
 
-  fcf::StringifyOptions so;
+  fcf::UnionStringifyOptions so;
   so.friendly = true;
   so.tab = "    ";
   std::stringstream ss;
@@ -272,10 +272,10 @@ Enum of integer type identifiers stored by the `fcf::Union` class
 * `UT_BOOL` - `bool` type
 * `UT_STRING` - `std::string` type
 * `UT_VECTOR` - `fcf::UnionVector` type ( `std::vector<fcf::Union>` )
-* `UT_MAP` - - `fcf::UnionMap` type ( `std::map<fcf::Union, fcf::Union, fcf::MapLess>` ),
+* `UT_MAP` - - `fcf::UnionMap` type ( `std::map<fcf::Union, fcf::Union, fcf::UnionMapLess>` ),
 
-<a name="description_stringify_options"></a>
-#### Struct fcf::StringifyOptions
+<a name="description_union_stringify_options"></a>
+#### Struct fcf::UnionStringifyOptions
 
 Structure describing the parameters of translation into string format/JSON
 
@@ -283,7 +283,7 @@ Structure describing the parameters of translation into string format/JSON
 
 * `bool friendly = false` - If `true`, then output is generated with line breaks and indentation.
 * `const char* tab = "  "` - A line containing a tab.
-* `fcf::StringDataFormat mode = SF_JSON` - Output format. SF_JSON - Json format. SF_VALUE - the value format is similar to SF_JSON, if the root element is a string, then the value will not be enclosed in quotation marks when output.
+* `fcf::UnionFormat mode = SF_JSON` - Output format. SF_JSON - Json format. SF_VALUE - the value format is similar to SF_JSON, if the root element is a string, then the value will not be enclosed in quotation marks when output.
 
 <a name="description_union__iterator"></a>
 #### Class fcf::Union::iterator
@@ -348,8 +348,8 @@ The class object contains a value that has a type - one of the enum [fcf::UnionT
 * `template <typename Ty> bool operator!=(const Ty& a_value) const` - Returns `true` if the stored value is not equal to `a_value`. If `a_strict` is `true`, then a strict comparison is performed (types must match).
 *
 * --- Serialization methods ---
-*  `void stringify(std::string& a_dest, const fcf::StringifyOptions& a_options = fcf::StringifyOptions{}) const` - Saves the stored data to the variable `a_dest` in JSON format
-*  `void stringify(std::basic_ostream<char>& a_dest, const StringifyOptions& a_options = StringifyOptions{}) const` - Saves the stored data to the a_dest stream in JSON format
+*  `void stringify(std::string& a_dest, const fcf::UnionStringifyOptions& a_options = fcf::UnionStringifyOptions{}) const` - Saves the stored data to the variable `a_dest` in JSON format
+*  `void stringify(std::basic_ostream<char>& a_dest, const UnionStringifyOptions& a_options = UnionStringifyOptions{}) const` - Saves the stored data to the a_dest stream in JSON format
 *  `void parse(const std::string& a_source)` - Parses a JSON string. The original format may have deviations from JSON (like JS): may contain comments; may contain a comma after the last element; object keys do not have to be enclosed in quotes.
 *  `void parse(std::basic_istream<char>& a_source)` - Parses a JSON stream. The original format may have deviations from JSON (like JS): may contain comments; may contain a comma after the last element; object keys do not have to be enclosed in quotes.
 *  
