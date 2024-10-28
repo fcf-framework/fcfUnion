@@ -8,7 +8,7 @@
 * [Creating a shared library with the Union class](#creating_shared_library)
 * [Description of types and methods](#description_types_and_methods)
 	* [Enum fcf::UnionType](#description_union_type)
-	* [Struct fcf::StringifyOptions](#description_union_stringify_options)
+	* [Struct fcf::UnionStringifyOptions](#description_union_stringify_options)
 	* [Class fcf::Union::iterator](#description_union__iterator)
 	* [Class fcf::Union::const_iterator](#description_union__const_iterator)
 	* [Class fcf::Union](#description_union)
