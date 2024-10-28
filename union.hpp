@@ -3106,7 +3106,7 @@ namespace fcf {
       }
       return result;
     }
-  #endif;
+  #endif
 
 
   //////////////////////////////////////////////
