@@ -349,7 +349,7 @@ namespace fcf {
     FCF_UNION_DECL_EXPORT void set(const Union& a_value);
 
     template <typename Ty>
-    inline void set() 
+    inline void set()
     { set((UnionType)fcf::Details::NUnion::TypeHelper<Ty>::type_index); }
 
     FCF_UNION_DECL_EXPORT void set(UnionType a_type);
@@ -1998,7 +1998,7 @@ namespace fcf {
           UnionValue& dstValue;
           const Ty&   value;
         };
-        
+
         template <typename Ty>
         struct FCF_UNION_DECL_VISIBILITY_HIDDEN Executor<EI_SET, Ty, TNOP>{
           template <typename TData>
@@ -3708,7 +3708,7 @@ namespace fcf {
       type = a_type;
     }
   #endif
-  
+
   #ifdef FCF_UNION_IMPLEMENTATION
     template <typename Ty>
     bool Union::equal(const Ty& a_value, bool a_strict) const {
