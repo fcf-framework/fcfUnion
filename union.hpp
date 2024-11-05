@@ -363,12 +363,12 @@ namespace fcf {
     { set(a_union); return *this; }
 
     template <typename Ty>
-    FCF_UNION_DECL_EXPORT bool equal(const Ty& a_value, bool a_strict, bool a_deep) const;
+    FCF_UNION_DECL_EXPORT bool equal(const Ty& a_value, bool a_strict = false, bool a_deep = false) const;
 
-    inline bool equal(const char* a_value, bool a_strict, bool a_deep) const
+    inline bool equal(const char* a_value, bool a_strict = false, bool a_deep = false) const
     { return equal<const char*>(a_value, a_strict, a_deep); }
 
-    FCF_UNION_DECL_EXPORT bool equal(const Union& a_value, bool a_strict, bool a_deep) const;
+    FCF_UNION_DECL_EXPORT bool equal(const Union& a_value, bool a_strict = false, bool a_deep = false) const;
 
     template <typename Ty>
     FCF_UNION_DECL_EXPORT bool lessStr(const Ty& a_value) const;
@@ -742,7 +742,7 @@ namespace fcf {
           template <typename TOperand>
           inline void operator()(const TOperand& a_value){
             _ref.push_back(a_value);
-          };
+          }
 
           inline value_type& get(){
             return _ref;
@@ -764,7 +764,7 @@ namespace fcf {
           inline void operator()(const TOperand& a_value){
             UnionMap::iterator it = _ref.insert(a_value).first;
             it->second.order = _ref.size();
-          };
+          }
 
           inline value_type& get(){
             return _ref;
@@ -1338,7 +1338,6 @@ namespace fcf {
 
         template <typename TResolver>
         FCF_UNION_DECL_VISIBILITY_HIDDEN bool parseBool(TResolver& a_resolver, const char** a_dstErrorMessage) {
-          size_t i = 0;
           unsigned char c;
           const char* pattern;
           bool result;
@@ -1864,6 +1863,23 @@ namespace fcf {
           EI_EQUAL,
           EI_EQUAL2,
         };
+        template <typename Ty>
+        struct ConstGetCallData{
+          typedef UnionStringifyOptions options_type;
+
+          const   UnionValue&           value;
+          Ty&                           destination;
+          const UnionStringifyOptions   options;
+          const char**                  error;
+        };
+
+        template <typename TReceiver>
+        struct ConvertCallData {
+          typedef TReceiver receiver_type;
+          TReceiver&        receiver;
+          const UnionValue& value;
+          const char**      error;
+        };
 
         template <typename TIterator>
         FCF_UNION_DECL_VISIBILITY_HIDDEN bool orderLess(const TIterator& a_left, const TIterator& a_right){
@@ -1957,17 +1973,9 @@ namespace fcf {
           Ty& operator()(TCallData& a_callData){
             UnionType type = (UnionType)TypeHelper<Ty>::type_index;
             if (type != (UnionType)a_callData.type) {
-              Ty newValue;
-
+              Ty newValue(Details::NUnion::TypeHelper<Ty>::init());
               const char* errorBuffer = 0;
-              struct CallData{
-                typedef UnionStringifyOptions options_type;
-                const UnionValue&        value;
-                Ty&                      destination;
-                const char**             error;
-                const UnionStringifyOptions   options;
-              };
-              CallData cd{a_callData.value, newValue, (a_callData.error ? a_callData.error : &errorBuffer)};
+              ConstGetCallData<Ty> cd{a_callData.value, newValue, UnionStringifyOptions{}, (a_callData.error ? a_callData.error : &errorBuffer)};
               Details::NUnion::Selector::select<void, Details::NUnion::EI_CONST_GET, Ty>(a_callData.type, cd);
               if (*cd.error){
                 *cd.error = 0;
@@ -2196,13 +2204,7 @@ namespace fcf {
           a_receiver(friendly ? "[\n" : "[" );
           for(size_t i = 0; i < uv.size(); ++i){
             UnionType type = uv[i].type;
-            struct TCallData {
-              typedef TReceiver receiver_type;
-              TReceiver&        receiver;
-              const UnionValue& value;
-              const char**      error;
-            };
-            TCallData cd{a_receiver, uv[i].value, a_dstErrorMessage};
+            Details::NUnion::ConvertCallData<TReceiver> cd{a_receiver, uv[i].value, a_dstErrorMessage};
             ++a_receiver.level;
             if (friendly) {
               for(int ti = 0; ti < a_receiver.level; ++ti) {
@@ -2355,8 +2357,6 @@ namespace fcf {
             return;
           }
 
-          bool lastValid = true;
-
           while(!a_resolver.end()) {
             skipSpaces(a_resolver);
             if (a_resolver.end()) {
@@ -2457,13 +2457,7 @@ namespace fcf {
             fcf::Details::NConvert::ConstResolver<std::string> r{key} ;
             Converter<std::string, std::string, TNOP>()(r, a_receiver, true, a_dstErrorMessage);
             a_receiver(": ");
-            struct TCallData{
-              typedef TReceiver receiver_type;
-              TReceiver&   receiver;
-              const UnionValue& value;
-              const char** error;
-            };
-            TCallData cd{a_receiver, (*itIt)->second.value, a_dstErrorMessage};
+            Details::NUnion::ConvertCallData<TReceiver> cd{a_receiver, (*itIt)->second.value, a_dstErrorMessage};
             Details::NUnion::Selector::select<void, Details::NUnion::EI_CONVERT, TNOP>((*itIt)->second.type, cd);
             ++itIt;
             if (itIt != iterators.end()) {
@@ -2744,7 +2738,7 @@ namespace fcf {
                 if (left < 0) {
                   return true;
                 } else {
-                  return left < right;
+                  return (unsigned long long)left < right;
                 }
               } else {
                 long long right = (long long)TypeHelper<TRight>::tonumber(a_right);
@@ -2752,7 +2746,7 @@ namespace fcf {
                 if (right < 0) {
                   return false;
                 } else {
-                  return left < right;;
+                  return left < (unsigned long long)right;
                 }
               }
             }
@@ -2835,7 +2829,7 @@ namespace fcf {
                     if (left < 0) {
                       return false;
                     } else {
-                      return left == right;
+                      return (unsigned long long)left == right;
                     }
                   } else {
                     long long right = (long long)TypeHelper<TRight>::tonumber(a_right);
@@ -2843,7 +2837,7 @@ namespace fcf {
                     if (right < 0) {
                       return false;
                     } else {
-                      return left == right;
+                      return left == (unsigned long long)right;
                     }
                   }
                 }
@@ -3590,14 +3584,7 @@ namespace fcf {
     void Union::stringify(std::string& a_dest, const UnionStringifyOptions& a_options) const {
       typedef std::string destination_type;
       Details::NUnion::StringCleaner<destination_type>()(a_dest);
-      struct CallData{
-        typedef UnionStringifyOptions options_type;
-        const UnionValue&        value;
-        destination_type&        destination;
-        const UnionStringifyOptions&  options;
-        const char**             error;
-      };
-      CallData cd{value, a_dest, a_options, 0};
+      Details::NUnion::ConstGetCallData<destination_type> cd{value, a_dest, a_options, 0};
       if (a_options.mode == SF_JSON) {
         Details::NUnion::Selector::select<void, Details::NUnion::EI_TO_JSON, destination_type>(type, cd);
       } else {
@@ -3610,14 +3597,7 @@ namespace fcf {
     void Union::stringify(std::basic_ostream<char>& a_dest, const UnionStringifyOptions& a_options) const {
       typedef std::basic_ostream<char> destination_type;
       Details::NUnion::StringCleaner<destination_type>()(a_dest);
-      struct CallData{
-        typedef UnionStringifyOptions options_type;
-        const UnionValue&        value;
-        destination_type&        destination;
-        const UnionStringifyOptions&  options;
-        const char**             error;
-      };
-      CallData cd{value, a_dest, a_options, 0};
+      Details::NUnion::ConstGetCallData<destination_type> cd{value, a_dest, a_options, 0};
       if (a_options.mode == SF_JSON) {
         Details::NUnion::Selector::select<void, Details::NUnion::EI_TO_JSON, destination_type>(type, cd);
       } else {
@@ -3629,14 +3609,8 @@ namespace fcf {
   #ifdef FCF_UNION_IMPLEMENTATION
   template <typename Ty>
   Ty Union::get() const {
-    struct CallData{
-      typedef UnionStringifyOptions options_type;
-      const UnionValue&             value;
-      const char**                  error;
-      Ty                            destination;
-      const UnionStringifyOptions   options;
-    };
-    CallData cd{value, 0};
+    Ty destination = Details::NUnion::TypeHelper<Ty>::init();
+    Details::NUnion::ConstGetCallData<Ty> cd{value, destination, UnionStringifyOptions{}, 0};
     Details::NUnion::Selector::select<void, Details::NUnion::EI_CONST_GET, Ty>(type, cd);
     return cd.destination;
   }
