@@ -1,5 +1,6 @@
 #ifndef ___FCF__UNION__UNION_HPP___
 #define ___FCF__UNION__UNION_HPP___
+
 #include <stdexcept>
 #include <algorithm>
 #include <memory>
@@ -362,12 +363,12 @@ namespace fcf {
     { set(a_union); return *this; }
 
     template <typename Ty>
-    FCF_UNION_DECL_EXPORT bool equal(const Ty& a_value, bool a_strict) const;
+    FCF_UNION_DECL_EXPORT bool equal(const Ty& a_value, bool a_strict, bool a_deep) const;
 
-    inline bool equal(const char* a_value, bool a_strict) const
-    { return equal<const char*>(a_value, a_strict); }
+    inline bool equal(const char* a_value, bool a_strict, bool a_deep) const
+    { return equal<const char*>(a_value, a_strict, a_deep); }
 
-    FCF_UNION_DECL_EXPORT bool equal(const Union& a_value, bool a_strict) const;
+    FCF_UNION_DECL_EXPORT bool equal(const Union& a_value, bool a_strict, bool a_deep) const;
 
     template <typename Ty>
     FCF_UNION_DECL_EXPORT bool lessStr(const Ty& a_value) const;
@@ -380,12 +381,15 @@ namespace fcf {
     FCF_UNION_DECL_EXPORT bool lessStr(const Union& a_value) const;
 
     template <typename Ty>
-    inline bool operator==(const Ty& a_value) const
-    { return equal(a_value, false); }
+    bool operator <(const Ty& a_value) const { return lessStr(a_value); }
 
     template <typename Ty>
-    inline bool operator!=(const Ty& a_value)
-    { return !equal(a_value, false); }
+    inline bool operator==(const Ty& a_value) const
+    { return equal(a_value, false, false); }
+
+    template <typename Ty>
+    inline bool operator!=(const Ty& a_value) const
+    { return !equal(a_value, false, false); }
 
     template <typename Ty>
     inline explicit operator Ty() const
@@ -1885,7 +1889,7 @@ namespace fcf {
 
         struct FCF_UNION_DECL_VISIBILITY_HIDDEN Cmp{
           template <typename TLeft, typename  TRight>
-          static bool equal(TLeft& a_left, TRight a_right, bool a_strict);
+          static bool equal(TLeft& a_left, TRight a_right, bool a_strict, bool a_deep);
           template <typename TLeft, typename  TRight>
           static bool lessStr(TLeft& a_left, TRight a_right);
           static int cmpStr(const char* a_left, const char* a_right);
@@ -2084,8 +2088,9 @@ namespace fcf {
               const UnionValue&  left;
               Ty&                right;
               bool               strict;
+              bool               deep;
             };
-            CallData cd{a_data.left, right, a_data.strict};
+            CallData cd{a_data.left, right, a_data.strict, a_data.deep};
             return Details::NUnion::Selector::select<bool, Details::NUnion::EI_EQUAL, TNOP>(a_data.leftType, cd);
           }
         };
@@ -2095,7 +2100,7 @@ namespace fcf {
           template <typename TData>
           inline bool operator()(TData& a_data){
             Ty& left = *(Ty*)(void*)&a_data.left;
-            return Cmp::equal(left, a_data.right, a_data.strict);
+            return Cmp::equal(left, a_data.right, a_data.strict, a_data.deep);
           }
         };
 
@@ -2765,7 +2770,7 @@ namespace fcf {
         }
 
         template <typename TLeft, typename  TRight>
-        bool Cmp::equal(TLeft& a_left, TRight a_right, bool a_strict) {
+        bool Cmp::equal(TLeft& a_left, TRight a_right, bool a_strict, bool a_deep) {
           typedef typename TypeHelper<TLeft>::far_type  left_far_type;
           typedef typename TypeHelper<TRight>::far_type right_far_type;
           int leftTypeIndex  = TypeHelper<left_far_type>::type_index;
@@ -2787,7 +2792,7 @@ namespace fcf {
                 return false;
               }
               if (u.isCompatible<right_far_type>()){
-                return Cmp::equal(u.ref<right_far_type>(), a_right, a_strict);
+                return Cmp::equal(u.ref<right_far_type>(), a_right, a_strict, a_deep);
               }
               return false;
             } else if (!leftCStr && rightCStr) {
@@ -2799,7 +2804,7 @@ namespace fcf {
                 return false;
               }
               if (u.isCompatible<left_far_type>()){
-                return Cmp::equal(u.ref<left_far_type>(), a_left, a_strict);
+                return Cmp::equal(u.ref<left_far_type>(), a_left, a_strict, a_deep);
               }
               return false;
             }
@@ -2845,6 +2850,34 @@ namespace fcf {
               } else {
                 return false;
               }
+            } else if (a_deep && leftTypeIndex == UT_VECTOR && rightTypeIndex == UT_VECTOR) {
+              const UnionVector& left = *(const UnionVector*)&a_left;
+              const UnionVector& right = *(const UnionVector*)&a_right;
+              if (left.size() != right.size()){
+                return false;
+              }
+              for(size_t i = 0; i < left.size(); ++i){
+                if (left[i] != right[i]) {
+                  return false;
+                }
+              }
+              return true;
+            } else if (a_deep && leftTypeIndex == UT_MAP && rightTypeIndex == UT_MAP) {
+              const UnionMap& left = *(const UnionMap*)&a_left;
+              const UnionMap& right = *(const UnionMap*)&a_right;
+              if (left.size() != right.size()){
+                return false;
+              }
+              for(UnionMap::const_iterator lit = left.cbegin(); lit != left.cend(); ++lit){
+                UnionMap::const_iterator rit = right.find(lit->first);
+                if (rit == right.cend()){
+                  return false;
+                }
+                if (rit->second != lit->second){
+                  return false;
+                }
+              }
+              return true;
             }
             return false;
           }
@@ -3711,41 +3744,43 @@ namespace fcf {
 
   #ifdef FCF_UNION_IMPLEMENTATION
     template <typename Ty>
-    bool Union::equal(const Ty& a_value, bool a_strict) const {
+    bool Union::equal(const Ty& a_value, bool a_strict, bool a_deep) const {
       struct CallData {
         bool              strict;
+        bool              deep;
         const UnionValue& left;
         const Ty&         right;
       };
-      CallData cd = {a_strict, value, a_value};
+      CallData cd = {a_strict, a_deep, value, a_value};
       return Details::NUnion::Selector::select<bool, Details::NUnion::EI_EQUAL, TNOP>(type, cd);
     }
   #endif // #ifdef FCF_UNION_IMPLEMENTATION
-  FCF_UNION_DECL_TEMPLATE_EXTERN template FCF_UNION_DECL_EXPORT bool Union::equal<Undefined>(const Undefined&, bool) const;
-  FCF_UNION_DECL_TEMPLATE_EXTERN template FCF_UNION_DECL_EXPORT bool Union::equal<Null>(const Null&, bool) const;
-  FCF_UNION_DECL_TEMPLATE_EXTERN template FCF_UNION_DECL_EXPORT bool Union::equal<bool>(const bool&, bool) const;
-  FCF_UNION_DECL_TEMPLATE_EXTERN template FCF_UNION_DECL_EXPORT bool Union::equal<int>(const int&, bool) const;
-  FCF_UNION_DECL_TEMPLATE_EXTERN template FCF_UNION_DECL_EXPORT bool Union::equal<unsigned int>(const unsigned int&, bool) const;
-  FCF_UNION_DECL_TEMPLATE_EXTERN template FCF_UNION_DECL_EXPORT bool Union::equal<long>(const long&, bool) const;
-  FCF_UNION_DECL_TEMPLATE_EXTERN template FCF_UNION_DECL_EXPORT bool Union::equal<unsigned long>(const unsigned long&, bool) const;
-  FCF_UNION_DECL_TEMPLATE_EXTERN template FCF_UNION_DECL_EXPORT bool Union::equal<long long>(const long long&, bool) const;
-  FCF_UNION_DECL_TEMPLATE_EXTERN template FCF_UNION_DECL_EXPORT bool Union::equal<unsigned long long>(const unsigned long long&, bool) const;
-  FCF_UNION_DECL_TEMPLATE_EXTERN template FCF_UNION_DECL_EXPORT bool Union::equal<double>(const double&, bool) const;
-  FCF_UNION_DECL_TEMPLATE_EXTERN template FCF_UNION_DECL_EXPORT  bool Union::equal<std::string>(const std::string&, bool) const;
-  FCF_UNION_DECL_TEMPLATE_EXTERN template FCF_UNION_DECL_EXPORT bool Union::equal<ConstCharPtr>(const ConstCharPtr&, bool) const;
-  FCF_UNION_DECL_TEMPLATE_EXTERN template FCF_UNION_DECL_EXPORT bool Union::equal<CharPtr>(const CharPtr&, bool) const;
-  FCF_UNION_DECL_TEMPLATE_EXTERN template FCF_UNION_DECL_EXPORT bool Union::equal<UnionVector>(const UnionVector&, bool) const;
-  FCF_UNION_DECL_TEMPLATE_EXTERN template FCF_UNION_DECL_EXPORT bool Union::equal<UnionMap>(const UnionMap&, bool) const;
+  FCF_UNION_DECL_TEMPLATE_EXTERN template FCF_UNION_DECL_EXPORT bool Union::equal<Undefined>(const Undefined&, bool, bool) const;
+  FCF_UNION_DECL_TEMPLATE_EXTERN template FCF_UNION_DECL_EXPORT bool Union::equal<Null>(const Null&, bool, bool) const;
+  FCF_UNION_DECL_TEMPLATE_EXTERN template FCF_UNION_DECL_EXPORT bool Union::equal<bool>(const bool&, bool, bool) const;
+  FCF_UNION_DECL_TEMPLATE_EXTERN template FCF_UNION_DECL_EXPORT bool Union::equal<int>(const int&, bool, bool) const;
+  FCF_UNION_DECL_TEMPLATE_EXTERN template FCF_UNION_DECL_EXPORT bool Union::equal<unsigned int>(const unsigned int&, bool, bool) const;
+  FCF_UNION_DECL_TEMPLATE_EXTERN template FCF_UNION_DECL_EXPORT bool Union::equal<long>(const long&, bool, bool) const;
+  FCF_UNION_DECL_TEMPLATE_EXTERN template FCF_UNION_DECL_EXPORT bool Union::equal<unsigned long>(const unsigned long&, bool, bool) const;
+  FCF_UNION_DECL_TEMPLATE_EXTERN template FCF_UNION_DECL_EXPORT bool Union::equal<long long>(const long long&, bool, bool) const;
+  FCF_UNION_DECL_TEMPLATE_EXTERN template FCF_UNION_DECL_EXPORT bool Union::equal<unsigned long long>(const unsigned long long&, bool, bool) const;
+  FCF_UNION_DECL_TEMPLATE_EXTERN template FCF_UNION_DECL_EXPORT bool Union::equal<double>(const double&, bool, bool) const;
+  FCF_UNION_DECL_TEMPLATE_EXTERN template FCF_UNION_DECL_EXPORT bool Union::equal<std::string>(const std::string&, bool, bool) const;
+  FCF_UNION_DECL_TEMPLATE_EXTERN template FCF_UNION_DECL_EXPORT bool Union::equal<ConstCharPtr>(const ConstCharPtr&, bool, bool) const;
+  FCF_UNION_DECL_TEMPLATE_EXTERN template FCF_UNION_DECL_EXPORT bool Union::equal<CharPtr>(const CharPtr&, bool, bool) const;
+  FCF_UNION_DECL_TEMPLATE_EXTERN template FCF_UNION_DECL_EXPORT bool Union::equal<UnionVector>(const UnionVector&, bool, bool) const;
+  FCF_UNION_DECL_TEMPLATE_EXTERN template FCF_UNION_DECL_EXPORT bool Union::equal<UnionMap>(const UnionMap&, bool, bool) const;
 
   #ifdef FCF_UNION_IMPLEMENTATION
-    bool Union::equal(const Union& a_value, bool a_strict) const {
+    bool Union::equal(const Union& a_value, bool a_strict, bool a_deep) const {
       struct CallData {
         bool              strict;
+        bool              deep;
         const UnionValue& left;
         UnionType         leftType;
         const UnionValue& right;
       };
-      CallData cd = {a_strict, value, type, a_value.value};
+      CallData cd = {a_strict, a_deep, value, type, a_value.value};
       return Details::NUnion::Selector::select<bool, Details::NUnion::EI_EQUAL2, TNOP>(a_value.type, cd);
     }
   #endif // #ifdef FCF_UNION_IMPLEMENTATION
