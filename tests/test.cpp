@@ -272,7 +272,6 @@ void unionTypeTest() {
     fcf::Union u;
     u.set<int>();
     u = 1;
-    int ivalue = (int)u + 1;
     TEST((std::string)u == "1");
     TEST((int)u == 1);
     TEST(((std::string)u.get<std::string>()) == std::string("1"));
@@ -319,7 +318,7 @@ void unionTypeTest() {
     fcf::Union uv(fcf::undefined);
     bool error = false;
     try {
-      int e = uv.get<int>();
+      uv.get<int>();
     } catch(std::exception&){
       error=  true;
     }
@@ -333,7 +332,7 @@ void unionTypeTest() {
     fcf::Union uv(fcf::undefined);
     bool error = false;
     try {
-      unsigned int e = uv.get<unsigned int>();
+      uv.get<unsigned int>();
     } catch(std::exception&){
       error=  true;
     }

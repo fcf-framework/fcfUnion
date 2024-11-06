@@ -48,8 +48,8 @@ void errorTest() {
 
   {
     fcf::Union u;
-    int l = -2;
-    int c = -2;
+    size_t l = -2;
+    size_t c = -2;
     try {
       u = 
         "[\n"
@@ -73,8 +73,8 @@ void errorTest() {
 
   {
     fcf::Union u;
-    int l = -2;
-    int c = -2;
+    size_t l = -2;
+    size_t c = -2;
     try {
       u.parse("");
     } catch(const fcf::UnionException& e){
@@ -89,8 +89,8 @@ void errorTest() {
 
   {
     fcf::Union u;
-    int l = -2;
-    int c = -2;
+    size_t l = -2;
+    size_t c = -2;
     try {
       u.parse("asd");
     } catch(const fcf::UnionException& e){
@@ -103,8 +103,8 @@ void errorTest() {
 
   {
     fcf::Union u;
-    int l = -2;
-    int c = -2;
+    size_t l = -2;
+    size_t c = -2;
     try {
       u = 1;
       u.get<fcf::UnionMap>();
@@ -119,8 +119,8 @@ void errorTest() {
 
   {
     fcf::Union u("");
-    int l = -2;
-    int c = -2;
+    size_t l = -2;
+    size_t c = -2;
     try {
       u.get<int>();
     } catch(const fcf::UnionException& e) {

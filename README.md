@@ -343,13 +343,13 @@ The class object contains a value that has a type - one of the enum [fcf::UnionT
 *  `void set(fcf::UnionType a_type)` - Sets a new empty value with the given type
 *  `template <typename Ty> fcf::Union& operator=(const Ty& a_value)` - Sets a new value.
 *  `fcf::Union& operator=(const fcf::Union& a_union)` - Sets a new value.
-*  `template <typename Ty> bool equal(const Ty& a_value, bool a_strict) const` - Returns `true` if the stored value is equal to `a_value`. If `a_strict` is `true`, then a strict comparison is performed (types must match).
-* `template <typename Ty> bool operator==(const Ty& a_value) const` - Returns `true` if the stored value is equal to `a_value`. If `a_strict` is `true`, then a strict comparison is performed (types must match).
-* `template <typename Ty> bool operator!=(const Ty& a_value) const` - Returns `true` if the stored value is not equal to `a_value`. If `a_strict` is `true`, then a strict comparison is performed (types must match).
+*  `template <typename Ty> bool equal(const Ty& a_value, bool a_strict, bool a_deep) const` - Returns `true` if the stored value is equal to `a_value`. If `a_strict` is `true`, then a strict comparison is performed (types must match). If the `a_deep` parameter is true, then an element-wise comparison is performed for `fcf::UnionVector` and `fcf::UnionMap`.
+* `template <typename Ty> bool operator==(const Ty& a_value) const` - Performs a non-strict and non-deep equality comparison. Returns `true` if the stored value is equal to `a_value`.
+* `template <typename Ty> bool operator!=(const Ty& a_value) const` - Performs a non-strict and non-deep non-equality comparison. Returns `true` if the stored value is not equal to `a_value`.
 *
 * --- Serialization methods ---
 *  `void stringify(std::string& a_dest, const fcf::UnionStringifyOptions& a_options = fcf::UnionStringifyOptions{}) const` - Saves the stored data to the variable `a_dest` in JSON format
-*  `void stringify(std::basic_ostream<char>& a_dest, const UnionStringifyOptions& a_options = UnionStringifyOptions{}) const` - Saves the stored data to the a_dest stream in JSON format
+*  `void stringify(std::basic_ostream<char>& a_dest, const UnionStringifyOptions& a_options = UnionStringifyOptions{}) const` - Saves the stored data to the `a_dest` stream in JSON format
 *  `void parse(const std::string& a_source)` - Parses a JSON string. The original format may have deviations from JSON (like JS): may contain comments; may contain a comma after the last element; object keys do not have to be enclosed in quotes.
 *  `void parse(std::basic_istream<char>& a_source)` - Parses a JSON stream. The original format may have deviations from JSON (like JS): may contain comments; may contain a comma after the last element; object keys do not have to be enclosed in quotes.
 *  

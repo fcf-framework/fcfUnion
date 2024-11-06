@@ -1,5 +1,6 @@
 #ifndef ___FCF__UNION__UNION_HPP___
 #define ___FCF__UNION__UNION_HPP___
+
 #include <stdexcept>
 #include <algorithm>
 #include <memory>
@@ -362,12 +363,12 @@ namespace fcf {
     { set(a_union); return *this; }
 
     template <typename Ty>
-    FCF_UNION_DECL_EXPORT bool equal(const Ty& a_value, bool a_strict) const;
+    FCF_UNION_DECL_EXPORT bool equal(const Ty& a_value, bool a_strict = false, bool a_deep = false) const;
 
-    inline bool equal(const char* a_value, bool a_strict) const
-    { return equal<const char*>(a_value, a_strict); }
+    inline bool equal(const char* a_value, bool a_strict = false, bool a_deep = false) const
+    { return equal<const char*>(a_value, a_strict, a_deep); }
 
-    FCF_UNION_DECL_EXPORT bool equal(const Union& a_value, bool a_strict) const;
+    FCF_UNION_DECL_EXPORT bool equal(const Union& a_value, bool a_strict = false, bool a_deep = false) const;
 
     template <typename Ty>
     FCF_UNION_DECL_EXPORT bool lessStr(const Ty& a_value) const;
@@ -380,12 +381,15 @@ namespace fcf {
     FCF_UNION_DECL_EXPORT bool lessStr(const Union& a_value) const;
 
     template <typename Ty>
-    inline bool operator==(const Ty& a_value) const
-    { return equal(a_value, false); }
+    bool operator <(const Ty& a_value) const { return lessStr(a_value); }
 
     template <typename Ty>
-    inline bool operator!=(const Ty& a_value)
-    { return !equal(a_value, false); }
+    inline bool operator==(const Ty& a_value) const
+    { return equal(a_value, false, false); }
+
+    template <typename Ty>
+    inline bool operator!=(const Ty& a_value) const
+    { return !equal(a_value, false, false); }
 
     template <typename Ty>
     inline explicit operator Ty() const
@@ -413,8 +417,8 @@ namespace fcf {
           ConstResolver(const value_type& a_ref, bool a_enableLineCounter = false)
             : _ref(a_ref) {
           }
-          inline const value_type& operator()(){
-            return _ref;
+          inline value_type& operator()(){
+            return (value_type&)_ref;
           }
 
           size_t line() {
@@ -431,7 +435,7 @@ namespace fcf {
         template <typename TString>
         struct FCF_UNION_DECL_VISIBILITY_HIDDEN SimpleConstResolver {
           typedef char item_type;
-          typedef std::string value_type;
+          typedef TString value_type;
 
           template <typename Ty>
           SimpleConstResolver(Ty& a_ref, bool a_enableLineCounter = false)
@@ -439,7 +443,7 @@ namespace fcf {
             , _index(0){
           }
 
-          inline const std::string& operator()(){
+          inline TString& operator()(){
             return _ref;
           }
 
@@ -518,7 +522,7 @@ namespace fcf {
                : _resolver((TRef&)a_ref), _q(0), _n1(-1), _n2(-1), _nb1(-1), _s(0), _l(a_enableLineCounter ? 1 : SIZE_MAX), _c(a_enableLineCounter ? 1: SIZE_MAX) {
             }
 
-            inline const value_type& operator()(){
+            inline value_type& operator()(){
               return _resolver.operator()();
             }
 
@@ -534,7 +538,7 @@ namespace fcf {
                 _n1 = -1;
                 return;
               }
-             char c;
+              char c = 0;
               while(!_resolver.end()) {
                 _next();
                 if (_resolver.end()){
@@ -659,6 +663,7 @@ namespace fcf {
           using ConstUncommentResolver< SimpleConstResolver<const char*> >::ConstUncommentResolver;
         };
 
+
         template <>
         struct FCF_UNION_DECL_VISIBILITY_HIDDEN ConstResolver< std::basic_istream<char> > : public ConstUncommentResolver< SimpleConstResolver< std::basic_istream<char> > >{
         typedef ConstUncommentResolver< SimpleConstResolver< std::basic_istream<char> > > base_type;
@@ -738,7 +743,7 @@ namespace fcf {
           template <typename TOperand>
           inline void operator()(const TOperand& a_value){
             _ref.push_back(a_value);
-          };
+          }
 
           inline value_type& get(){
             return _ref;
@@ -760,7 +765,7 @@ namespace fcf {
           inline void operator()(const TOperand& a_value){
             UnionMap::iterator it = _ref.insert(a_value).first;
             it->second.order = _ref.size();
-          };
+          }
 
           inline value_type& get(){
             return _ref;
@@ -848,6 +853,61 @@ namespace fcf {
 
         template <>
         struct FCF_UNION_DECL_VISIBILITY_HIDDEN Converter<long long, UnionMap, TNOP>{
+          template <typename TResolver, typename TReceiver>
+          inline void operator()(TResolver& a_resolver, TReceiver& a_receiver, bool a_inner, const char** a_dstErrorMessage) {
+            FCF_THROW_OR_RESULT_ERROR(a_dstErrorMessage, "Incorrect map value", a_resolver, false);
+          }
+        };
+
+
+        ///////////////////////////////////////
+        // Convertion from long int
+        ///////////////////////////////////////
+        template <>
+        struct FCF_UNION_DECL_VISIBILITY_HIDDEN Converter<long int, std::string, TNOP>{
+          template <typename TResolver, typename TReceiver>
+          inline void operator()(TResolver& a_resolver, TReceiver& a_receiver, bool a_inner, const char** a_dstErrorMessage) {
+            return  a_receiver(std::to_string(a_resolver()));
+          }
+        };
+
+        template <>
+        struct FCF_UNION_DECL_VISIBILITY_HIDDEN Converter<long int, UnionVector, TNOP>{
+          template <typename TResolver, typename TReceiver>
+          inline void operator()(TResolver& a_resolver, TReceiver& a_receiver, bool a_inner, const char** a_dstErrorMessage) {
+            FCF_THROW_OR_RESULT_ERROR(a_dstErrorMessage, "Incorrect vector value", a_resolver, false);
+          }
+        };
+
+        template <>
+        struct FCF_UNION_DECL_VISIBILITY_HIDDEN Converter<long int, UnionMap, TNOP>{
+          template <typename TResolver, typename TReceiver>
+          inline void operator()(TResolver& a_resolver, TReceiver& a_receiver, bool a_inner, const char** a_dstErrorMessage) {
+            FCF_THROW_OR_RESULT_ERROR(a_dstErrorMessage, "Incorrect map value", a_resolver, false);
+          }
+        };
+
+        ///////////////////////////////////////
+        // Convertion from unsigned long int
+        ///////////////////////////////////////
+        template <>
+        struct FCF_UNION_DECL_VISIBILITY_HIDDEN Converter<unsigned long int, std::string, TNOP>{
+          template <typename TResolver, typename TReceiver>
+          inline void operator()(TResolver& a_resolver, TReceiver& a_receiver, bool a_inner, const char** a_dstErrorMessage) {
+            return  a_receiver(std::to_string(a_resolver()));
+          }
+        };
+
+        template <>
+        struct FCF_UNION_DECL_VISIBILITY_HIDDEN Converter<unsigned long int, UnionVector, TNOP>{
+          template <typename TResolver, typename TReceiver>
+          inline void operator()(TResolver& a_resolver, TReceiver& a_receiver, bool a_inner, const char** a_dstErrorMessage) {
+            FCF_THROW_OR_RESULT_ERROR(a_dstErrorMessage, "Incorrect vector value", a_resolver, false);
+          }
+        };
+
+        template <>
+        struct FCF_UNION_DECL_VISIBILITY_HIDDEN Converter<unsigned long int, UnionMap, TNOP>{
           template <typename TResolver, typename TReceiver>
           inline void operator()(TResolver& a_resolver, TReceiver& a_receiver, bool a_inner, const char** a_dstErrorMessage) {
             FCF_THROW_OR_RESULT_ERROR(a_dstErrorMessage, "Incorrect map value", a_resolver, false);
@@ -1145,7 +1205,7 @@ namespace fcf {
           double dd = 1;
           size_t m = 0;
           size_t i = 0;
-          unsigned char lc;
+          unsigned char lc = 0;
           while(!a_resolver.end()){
             unsigned char c = (unsigned char)a_resolver.read();
             if (c == '-'){
@@ -1251,7 +1311,7 @@ namespace fcf {
             return std::string();
           }
           size_t sc = 0;
-          unsigned char c;
+          unsigned char c = 0;
           while(!a_resolver.end()) {
             c = a_resolver.read();
             if (sc && sc % 2) {
@@ -1334,8 +1394,7 @@ namespace fcf {
 
         template <typename TResolver>
         FCF_UNION_DECL_VISIBILITY_HIDDEN bool parseBool(TResolver& a_resolver, const char** a_dstErrorMessage) {
-          size_t i = 0;
-          unsigned char c;
+          unsigned char c = 0;
           const char* pattern;
           bool result;
           while(!a_resolver.end()) {
@@ -1860,6 +1919,42 @@ namespace fcf {
           EI_EQUAL,
           EI_EQUAL2,
         };
+        template <typename Ty>
+        struct ConstGetCallData{
+          typedef UnionStringifyOptions options_type;
+
+          const   UnionValue&           value;
+          Ty&                           destination;
+          const UnionStringifyOptions   options;
+          const char**                  error;
+        };
+
+        template <typename TReceiver>
+        struct ConvertCallData {
+          typedef TReceiver receiver_type;
+          TReceiver&        receiver;
+          const UnionValue& value;
+          const char**      error;
+        };
+
+        template <typename TRight>
+        struct LessCallData {
+          const UnionValue& left;
+          const TRight&     right;
+        };
+
+        template <typename TRight>
+        struct EqualCallData{
+          const UnionValue&  left;
+          const TRight&      right;
+          bool               strict;
+          bool               deep;
+        };
+
+        struct CopyCallData{
+          const UnionValue& source;
+          UnionValue&       destination;
+        };
 
         template <typename TIterator>
         FCF_UNION_DECL_VISIBILITY_HIDDEN bool orderLess(const TIterator& a_left, const TIterator& a_right){
@@ -1885,7 +1980,7 @@ namespace fcf {
 
         struct FCF_UNION_DECL_VISIBILITY_HIDDEN Cmp{
           template <typename TLeft, typename  TRight>
-          static bool equal(TLeft& a_left, TRight a_right, bool a_strict);
+          static bool equal(TLeft& a_left, TRight a_right, bool a_strict, bool a_deep);
           template <typename TLeft, typename  TRight>
           static bool lessStr(TLeft& a_left, TRight a_right);
           static int cmpStr(const char* a_left, const char* a_right);
@@ -1931,7 +2026,8 @@ namespace fcf {
         struct FCF_UNION_DECL_VISIBILITY_HIDDEN Executor<EI_CONST_GET, Ty, Ty>{
           template <typename TCallData>
           inline void operator()(TCallData& a_callData){
-            a_callData.destination = *(Ty*)(void*)&a_callData.value.vint;
+            void* ptr = (void*)&a_callData.value.vint;
+            a_callData.destination = *(Ty*)ptr;
           }
         };
 
@@ -1953,17 +2049,9 @@ namespace fcf {
           Ty& operator()(TCallData& a_callData){
             UnionType type = (UnionType)TypeHelper<Ty>::type_index;
             if (type != (UnionType)a_callData.type) {
-              Ty newValue;
-
+              Ty newValue(Details::NUnion::TypeHelper<Ty>::init());
               const char* errorBuffer = 0;
-              struct CallData{
-                typedef UnionStringifyOptions options_type;
-                const UnionValue&        value;
-                Ty&                      destination;
-                const char**             error;
-                const UnionStringifyOptions   options;
-              };
-              CallData cd{a_callData.value, newValue, (a_callData.error ? a_callData.error : &errorBuffer)};
+              ConstGetCallData<Ty> cd{a_callData.value, newValue, UnionStringifyOptions{}, (a_callData.error ? a_callData.error : &errorBuffer)};
               Details::NUnion::Selector::select<void, Details::NUnion::EI_CONST_GET, Ty>(a_callData.type, cd);
               if (*cd.error){
                 *cd.error = 0;
@@ -1975,7 +2063,8 @@ namespace fcf {
               Details::NUnion::Executor<fcf::Details::NUnion::EI_SET, Ty, TNOP>()(esa);
               a_callData.type = type;
             }
-            return *(Ty*)(void*)&a_callData.value.vint;
+            void* ptr = (void*)&a_callData.value.vint;
+            return *(Ty*)ptr;
           }
         };
 
@@ -2004,7 +2093,8 @@ namespace fcf {
           template <typename TData>
           inline void operator()(TData& a_data){
             a_data.dstType = (UnionType)Details::NUnion::TypeHelper<Ty>::type_index;
-            *((Ty*)(void*)&a_data.dstValue.vint) = a_data.value;
+            void* ptr = &a_data.dstValue.vint;
+            *(Ty*)ptr = a_data.value;
           }
         };
 
@@ -2066,11 +2156,7 @@ namespace fcf {
           template <typename TData>
           bool operator()(TData& a_data){
             Ty& right = *(Ty*)(void*)&a_data.right;
-            struct CallData{
-              const UnionValue&  left;
-              Ty&                right;
-            };
-            CallData cd{a_data.left, right};
+            Details::NUnion::LessCallData<Ty> cd{a_data.left, right};
             return Details::NUnion::Selector::select<bool, Details::NUnion::EI_LESS, TNOP>(a_data.leftType, cd);
           }
         };
@@ -2080,12 +2166,7 @@ namespace fcf {
           template <typename TData>
           bool operator()(TData& a_data){
             Ty& right = *(Ty*)(void*)&a_data.right;
-            struct CallData{
-              const UnionValue&  left;
-              Ty&                right;
-              bool               strict;
-            };
-            CallData cd{a_data.left, right, a_data.strict};
+            EqualCallData<Ty> cd{a_data.left, right, a_data.strict, a_data.deep};
             return Details::NUnion::Selector::select<bool, Details::NUnion::EI_EQUAL, TNOP>(a_data.leftType, cd);
           }
         };
@@ -2095,7 +2176,7 @@ namespace fcf {
           template <typename TData>
           inline bool operator()(TData& a_data){
             Ty& left = *(Ty*)(void*)&a_data.left;
-            return Cmp::equal(left, a_data.right, a_data.strict);
+            return Cmp::equal(left, a_data.right, a_data.strict, a_data.deep);
           }
         };
 
@@ -2107,7 +2188,8 @@ namespace fcf {
         struct FCF_UNION_DECL_VISIBILITY_HIDDEN Executor<EI_COPY, Ty, TNOP>{
           template <typename TCallData>
           inline void operator()(TCallData a_callData){
-            Ty& value = *((Ty*)(void*)&a_callData.source.vint);
+            void* ptr = (void*)&a_callData.source.vint;
+            Ty& value = *(Ty*)ptr;
             new ((void*)&a_callData.destination.vint)Ty(value);
           }
         };
@@ -2191,13 +2273,7 @@ namespace fcf {
           a_receiver(friendly ? "[\n" : "[" );
           for(size_t i = 0; i < uv.size(); ++i){
             UnionType type = uv[i].type;
-            struct TCallData {
-              typedef TReceiver receiver_type;
-              TReceiver&        receiver;
-              const UnionValue& value;
-              const char**      error;
-            };
-            TCallData cd{a_receiver, uv[i].value, a_dstErrorMessage};
+            Details::NUnion::ConvertCallData<TReceiver> cd{a_receiver, uv[i].value, a_dstErrorMessage};
             ++a_receiver.level;
             if (friendly) {
               for(int ti = 0; ti < a_receiver.level; ++ti) {
@@ -2225,11 +2301,11 @@ namespace fcf {
           }
           unsigned char c = (unsigned char)a_resolver.read();
           if (c == '-' || (c >= (unsigned char)'0' && c <= (unsigned char)'9')){
-            bool               minus;
-            bool               point;
-            double             dvalue;
-            long long          ivalue;
-            unsigned long long uvalue;
+            bool               minus = false;
+            bool               point = false;
+            double             dvalue = 0;
+            long long          ivalue = 0;
+            unsigned long long uvalue = 0;
             parseNumber(a_resolver, false, &minus, &point, &dvalue, &ivalue, &uvalue, a_dstErrorMessage);
             if (point) {
               a_union.set(dvalue);
@@ -2350,8 +2426,6 @@ namespace fcf {
             return;
           }
 
-          bool lastValid = true;
-
           while(!a_resolver.end()) {
             skipSpaces(a_resolver);
             if (a_resolver.end()) {
@@ -2452,13 +2526,7 @@ namespace fcf {
             fcf::Details::NConvert::ConstResolver<std::string> r{key} ;
             Converter<std::string, std::string, TNOP>()(r, a_receiver, true, a_dstErrorMessage);
             a_receiver(": ");
-            struct TCallData{
-              typedef TReceiver receiver_type;
-              TReceiver&   receiver;
-              const UnionValue& value;
-              const char** error;
-            };
-            TCallData cd{a_receiver, (*itIt)->second.value, a_dstErrorMessage};
+            Details::NUnion::ConvertCallData<TReceiver> cd{a_receiver, (*itIt)->second.value, a_dstErrorMessage};
             Details::NUnion::Selector::select<void, Details::NUnion::EI_CONVERT, TNOP>((*itIt)->second.type, cd);
             ++itIt;
             if (itIt != iterators.end()) {
@@ -2512,11 +2580,11 @@ namespace fcf {
             a_key.set(parseInnerString(a_resolver, a_dstErrorMessage));
             return true;
           } else if (c == '-' || (c >= (unsigned char)'0' && c < (unsigned char)'9')){
-            bool         minus;
-            bool         point;
-            double       dvalue;
-            int          ivalue;
-            unsigned int uvalue;
+            bool         minus = false;
+            bool         point = false;
+            double       dvalue = 0;
+            int          ivalue = 0;
+            unsigned int uvalue = 0;
             parseNumber(a_resolver, false, &minus, &point, &dvalue, &ivalue, &uvalue, a_dstErrorMessage);
             if (point) {
               a_key.set(dvalue);
@@ -2652,6 +2720,8 @@ namespace fcf {
 
         template <typename TLeft, typename  TRight>
         bool Cmp::lessStr(TLeft& a_left, TRight a_right) {
+          void* leftPtr = &a_left;
+          void* rightPtr = &a_right;
           typedef typename TypeHelper<TLeft>::far_type  left_far_type;
           typedef typename TypeHelper<TRight>::far_type right_far_type;
           int leftTypeIndex  = TypeHelper<left_far_type>::type_index;
@@ -2664,10 +2734,10 @@ namespace fcf {
             } else if (leftCStr && !rightCStr){
               UnionStringifyOptions so;
               std::string rstr;
-              fcf::Details::NConvert::ConstResolver< right_far_type > r{a_right};
+              fcf::Details::NConvert::ConstResolver< TRight > r{a_right};
               fcf::Details::NConvert::Receiver<std::string, UnionStringifyOptions> rc{rstr, so};
               const char* error = 0;
-              fcf::Details::NConvert::Converter<right_far_type, std::string, TNOP>()(r, rc, false, &error);
+              fcf::Details::NConvert::Converter<TRight, std::string, TNOP>()(r, rc, false, &error);
               if (error) {
                 return false;
               }
@@ -2675,10 +2745,10 @@ namespace fcf {
             } else {
               UnionStringifyOptions so;
               std::string lstr;
-              fcf::Details::NConvert::ConstResolver< left_far_type > r{a_left};
+              fcf::Details::NConvert::ConstResolver< TLeft > r{a_left};
               fcf::Details::NConvert::Receiver<std::string, UnionStringifyOptions> rc{lstr, so};
               const char* error = 0;
-              fcf::Details::NConvert::Converter<left_far_type, std::string, TNOP>()(r, rc, false, &error);
+              fcf::Details::NConvert::Converter<TLeft, std::string, TNOP>()(r, rc, false, &error);
               if (error) {
                 return true;
               }
@@ -2703,22 +2773,22 @@ namespace fcf {
           } else if (rightTypeIndex == UT_NULL) {
             return false;
           }
-          if (leftTypeIndex == UT_BOOL && !(*(bool*)&a_left)) {
-            if (rightTypeIndex == UT_BOOL&& !(*(bool*)&a_right)) {
+          if (leftTypeIndex == UT_BOOL && !(*(bool*)leftPtr)) {
+            if (rightTypeIndex == UT_BOOL&& !(*(bool*)rightPtr)) {
               return false;
             } else {
               return true;
             }
-          } else if (rightTypeIndex == UT_BOOL && !(*(bool*)&a_right)) {
+          } else if (rightTypeIndex == UT_BOOL && !(*(bool*)rightPtr)) {
             return false;
           }
-          if (leftTypeIndex == UT_BOOL && (*(bool*)&a_left)) {
-            if (rightTypeIndex == UT_BOOL&& (*(bool*)&a_right)) {
+          if (leftTypeIndex == UT_BOOL && (*(bool*)leftPtr)) {
+            if (rightTypeIndex == UT_BOOL&& (*(bool*)rightPtr)) {
               return false;
             } else {
               return true;
             }
-          } else if (rightTypeIndex == UT_BOOL && (*(bool*)&a_right)) {
+          } else if (rightTypeIndex == UT_BOOL && (*(bool*)rightPtr)) {
             return false;
           }
           bool isLeftNum = leftTypeIndex >= FIRST_NUMBER_TYPE && leftTypeIndex <= LAST_NUMBER_TYPE;
@@ -2739,7 +2809,7 @@ namespace fcf {
                 if (left < 0) {
                   return true;
                 } else {
-                  return left < right;
+                  return (unsigned long long)left < right;
                 }
               } else {
                 long long right = (long long)TypeHelper<TRight>::tonumber(a_right);
@@ -2747,7 +2817,7 @@ namespace fcf {
                 if (right < 0) {
                   return false;
                 } else {
-                  return left < right;;
+                  return left < (unsigned long long)right;
                 }
               }
             }
@@ -2765,7 +2835,7 @@ namespace fcf {
         }
 
         template <typename TLeft, typename  TRight>
-        bool Cmp::equal(TLeft& a_left, TRight a_right, bool a_strict) {
+        bool Cmp::equal(TLeft& a_left, TRight a_right, bool a_strict, bool a_deep) {
           typedef typename TypeHelper<TLeft>::far_type  left_far_type;
           typedef typename TypeHelper<TRight>::far_type right_far_type;
           int leftTypeIndex  = TypeHelper<left_far_type>::type_index;
@@ -2787,7 +2857,7 @@ namespace fcf {
                 return false;
               }
               if (u.isCompatible<right_far_type>()){
-                return Cmp::equal(u.ref<right_far_type>(), a_right, a_strict);
+                return Cmp::equal(u.ref<right_far_type>(), a_right, a_strict, a_deep);
               }
               return false;
             } else if (!leftCStr && rightCStr) {
@@ -2799,7 +2869,7 @@ namespace fcf {
                 return false;
               }
               if (u.isCompatible<left_far_type>()){
-                return Cmp::equal(u.ref<left_far_type>(), a_left, a_strict);
+                return Cmp::equal(u.ref<left_far_type>(), a_left, a_strict, a_deep);
               }
               return false;
             }
@@ -2830,7 +2900,7 @@ namespace fcf {
                     if (left < 0) {
                       return false;
                     } else {
-                      return left == right;
+                      return (unsigned long long)left == right;
                     }
                   } else {
                     long long right = (long long)TypeHelper<TRight>::tonumber(a_right);
@@ -2838,13 +2908,45 @@ namespace fcf {
                     if (right < 0) {
                       return false;
                     } else {
-                      return left == right;
+                      return left == (unsigned long long)right;
                     }
                   }
                 }
               } else {
                 return false;
               }
+            } else if (a_deep && leftTypeIndex == UT_VECTOR && rightTypeIndex == UT_VECTOR) {
+              void* leftPtr = &a_left;
+              const UnionVector& left = *(const UnionVector*)leftPtr;
+              void* rightPtr = &a_right;
+              const UnionVector& right = *(const UnionVector*)rightPtr;
+              if (left.size() != right.size()){
+                return false;
+              }
+              for(size_t i = 0; i < left.size(); ++i){
+                if (left[i] != right[i]) {
+                  return false;
+                }
+              }
+              return true;
+            } else if (a_deep && leftTypeIndex == UT_MAP && rightTypeIndex == UT_MAP) {
+              void* leftPtr = &a_left;
+              const UnionMap& left = *(const UnionMap*)leftPtr;
+              void* rightPtr = &a_right;
+              const UnionMap& right = *(const UnionMap*)rightPtr;
+              if (left.size() != right.size()){
+                return false;
+              }
+              for(UnionMap::const_iterator lit = left.cbegin(); lit != left.cend(); ++lit){
+                UnionMap::const_iterator rit = right.find(lit->first);
+                if (rit == right.cend()){
+                  return false;
+                }
+                if (rit->second != lit->second){
+                  return false;
+                }
+              }
+              return true;
             }
             return false;
           }
@@ -3124,11 +3226,7 @@ namespace fcf {
       : type(UT_UNDEFINED), orderc(a_union.orderc), order(a_union.order)
     {
       type = a_union.type;
-      struct CallData{
-        const UnionValue& source;
-        UnionValue&       destination;
-      };
-      CallData cd{a_union.value, value};
+      Details::NUnion::CopyCallData cd{a_union.value, value};
       Details::NUnion::Selector::select<void, Details::NUnion::EI_COPY, TNOP>(type, cd);
     }
   #endif // #ifdef FCF_UNION_IMPLEMENTATION
@@ -3557,14 +3655,7 @@ namespace fcf {
     void Union::stringify(std::string& a_dest, const UnionStringifyOptions& a_options) const {
       typedef std::string destination_type;
       Details::NUnion::StringCleaner<destination_type>()(a_dest);
-      struct CallData{
-        typedef UnionStringifyOptions options_type;
-        const UnionValue&        value;
-        destination_type&        destination;
-        const UnionStringifyOptions&  options;
-        const char**             error;
-      };
-      CallData cd{value, a_dest, a_options, 0};
+      Details::NUnion::ConstGetCallData<destination_type> cd{value, a_dest, a_options, 0};
       if (a_options.mode == SF_JSON) {
         Details::NUnion::Selector::select<void, Details::NUnion::EI_TO_JSON, destination_type>(type, cd);
       } else {
@@ -3577,14 +3668,7 @@ namespace fcf {
     void Union::stringify(std::basic_ostream<char>& a_dest, const UnionStringifyOptions& a_options) const {
       typedef std::basic_ostream<char> destination_type;
       Details::NUnion::StringCleaner<destination_type>()(a_dest);
-      struct CallData{
-        typedef UnionStringifyOptions options_type;
-        const UnionValue&        value;
-        destination_type&        destination;
-        const UnionStringifyOptions&  options;
-        const char**             error;
-      };
-      CallData cd{value, a_dest, a_options, 0};
+      Details::NUnion::ConstGetCallData<destination_type> cd{value, a_dest, a_options, 0};
       if (a_options.mode == SF_JSON) {
         Details::NUnion::Selector::select<void, Details::NUnion::EI_TO_JSON, destination_type>(type, cd);
       } else {
@@ -3596,14 +3680,8 @@ namespace fcf {
   #ifdef FCF_UNION_IMPLEMENTATION
   template <typename Ty>
   Ty Union::get() const {
-    struct CallData{
-      typedef UnionStringifyOptions options_type;
-      const UnionValue&             value;
-      const char**                  error;
-      Ty                            destination;
-      const UnionStringifyOptions   options;
-    };
-    CallData cd{value, 0};
+    Ty destination = Details::NUnion::TypeHelper<Ty>::init();
+    Details::NUnion::ConstGetCallData<Ty> cd{value, destination, UnionStringifyOptions{}, 0};
     Details::NUnion::Selector::select<void, Details::NUnion::EI_CONST_GET, Ty>(type, cd);
     return cd.destination;
   }
@@ -3680,11 +3758,7 @@ namespace fcf {
     void Union::set(const Union& a_union){
       Details::NUnion::Selector::select<void, Details::NUnion::EI_DESTROY, TNOP>(type, value);
       type = UT_UNDEFINED;
-      struct CallData{
-        const UnionValue& source;
-        UnionValue&       destination;
-      };
-      CallData cd{a_union.value, value};
+      Details::NUnion::CopyCallData cd{a_union.value, value};
       Details::NUnion::Selector::select<void, Details::NUnion::EI_COPY, TNOP>(a_union.type, cd);
       if (!order) {
         order = a_union.order;
@@ -3711,41 +3785,37 @@ namespace fcf {
 
   #ifdef FCF_UNION_IMPLEMENTATION
     template <typename Ty>
-    bool Union::equal(const Ty& a_value, bool a_strict) const {
-      struct CallData {
-        bool              strict;
-        const UnionValue& left;
-        const Ty&         right;
-      };
-      CallData cd = {a_strict, value, a_value};
+    bool Union::equal(const Ty& a_value, bool a_strict, bool a_deep) const {
+      Details::NUnion::EqualCallData<Ty> cd = {value, a_value, a_strict, a_deep};
       return Details::NUnion::Selector::select<bool, Details::NUnion::EI_EQUAL, TNOP>(type, cd);
     }
   #endif // #ifdef FCF_UNION_IMPLEMENTATION
-  FCF_UNION_DECL_TEMPLATE_EXTERN template FCF_UNION_DECL_EXPORT bool Union::equal<Undefined>(const Undefined&, bool) const;
-  FCF_UNION_DECL_TEMPLATE_EXTERN template FCF_UNION_DECL_EXPORT bool Union::equal<Null>(const Null&, bool) const;
-  FCF_UNION_DECL_TEMPLATE_EXTERN template FCF_UNION_DECL_EXPORT bool Union::equal<bool>(const bool&, bool) const;
-  FCF_UNION_DECL_TEMPLATE_EXTERN template FCF_UNION_DECL_EXPORT bool Union::equal<int>(const int&, bool) const;
-  FCF_UNION_DECL_TEMPLATE_EXTERN template FCF_UNION_DECL_EXPORT bool Union::equal<unsigned int>(const unsigned int&, bool) const;
-  FCF_UNION_DECL_TEMPLATE_EXTERN template FCF_UNION_DECL_EXPORT bool Union::equal<long>(const long&, bool) const;
-  FCF_UNION_DECL_TEMPLATE_EXTERN template FCF_UNION_DECL_EXPORT bool Union::equal<unsigned long>(const unsigned long&, bool) const;
-  FCF_UNION_DECL_TEMPLATE_EXTERN template FCF_UNION_DECL_EXPORT bool Union::equal<long long>(const long long&, bool) const;
-  FCF_UNION_DECL_TEMPLATE_EXTERN template FCF_UNION_DECL_EXPORT bool Union::equal<unsigned long long>(const unsigned long long&, bool) const;
-  FCF_UNION_DECL_TEMPLATE_EXTERN template FCF_UNION_DECL_EXPORT bool Union::equal<double>(const double&, bool) const;
-  FCF_UNION_DECL_TEMPLATE_EXTERN template FCF_UNION_DECL_EXPORT  bool Union::equal<std::string>(const std::string&, bool) const;
-  FCF_UNION_DECL_TEMPLATE_EXTERN template FCF_UNION_DECL_EXPORT bool Union::equal<ConstCharPtr>(const ConstCharPtr&, bool) const;
-  FCF_UNION_DECL_TEMPLATE_EXTERN template FCF_UNION_DECL_EXPORT bool Union::equal<CharPtr>(const CharPtr&, bool) const;
-  FCF_UNION_DECL_TEMPLATE_EXTERN template FCF_UNION_DECL_EXPORT bool Union::equal<UnionVector>(const UnionVector&, bool) const;
-  FCF_UNION_DECL_TEMPLATE_EXTERN template FCF_UNION_DECL_EXPORT bool Union::equal<UnionMap>(const UnionMap&, bool) const;
+  FCF_UNION_DECL_TEMPLATE_EXTERN template FCF_UNION_DECL_EXPORT bool Union::equal<Undefined>(const Undefined&, bool, bool) const;
+  FCF_UNION_DECL_TEMPLATE_EXTERN template FCF_UNION_DECL_EXPORT bool Union::equal<Null>(const Null&, bool, bool) const;
+  FCF_UNION_DECL_TEMPLATE_EXTERN template FCF_UNION_DECL_EXPORT bool Union::equal<bool>(const bool&, bool, bool) const;
+  FCF_UNION_DECL_TEMPLATE_EXTERN template FCF_UNION_DECL_EXPORT bool Union::equal<int>(const int&, bool, bool) const;
+  FCF_UNION_DECL_TEMPLATE_EXTERN template FCF_UNION_DECL_EXPORT bool Union::equal<unsigned int>(const unsigned int&, bool, bool) const;
+  FCF_UNION_DECL_TEMPLATE_EXTERN template FCF_UNION_DECL_EXPORT bool Union::equal<long>(const long&, bool, bool) const;
+  FCF_UNION_DECL_TEMPLATE_EXTERN template FCF_UNION_DECL_EXPORT bool Union::equal<unsigned long>(const unsigned long&, bool, bool) const;
+  FCF_UNION_DECL_TEMPLATE_EXTERN template FCF_UNION_DECL_EXPORT bool Union::equal<long long>(const long long&, bool, bool) const;
+  FCF_UNION_DECL_TEMPLATE_EXTERN template FCF_UNION_DECL_EXPORT bool Union::equal<unsigned long long>(const unsigned long long&, bool, bool) const;
+  FCF_UNION_DECL_TEMPLATE_EXTERN template FCF_UNION_DECL_EXPORT bool Union::equal<double>(const double&, bool, bool) const;
+  FCF_UNION_DECL_TEMPLATE_EXTERN template FCF_UNION_DECL_EXPORT bool Union::equal<std::string>(const std::string&, bool, bool) const;
+  FCF_UNION_DECL_TEMPLATE_EXTERN template FCF_UNION_DECL_EXPORT bool Union::equal<ConstCharPtr>(const ConstCharPtr&, bool, bool) const;
+  FCF_UNION_DECL_TEMPLATE_EXTERN template FCF_UNION_DECL_EXPORT bool Union::equal<CharPtr>(const CharPtr&, bool, bool) const;
+  FCF_UNION_DECL_TEMPLATE_EXTERN template FCF_UNION_DECL_EXPORT bool Union::equal<UnionVector>(const UnionVector&, bool, bool) const;
+  FCF_UNION_DECL_TEMPLATE_EXTERN template FCF_UNION_DECL_EXPORT bool Union::equal<UnionMap>(const UnionMap&, bool, bool) const;
 
   #ifdef FCF_UNION_IMPLEMENTATION
-    bool Union::equal(const Union& a_value, bool a_strict) const {
+    bool Union::equal(const Union& a_value, bool a_strict, bool a_deep) const {
       struct CallData {
         bool              strict;
+        bool              deep;
         const UnionValue& left;
         UnionType         leftType;
         const UnionValue& right;
       };
-      CallData cd = {a_strict, value, type, a_value.value};
+      CallData cd = {a_strict, a_deep, value, type, a_value.value};
       return Details::NUnion::Selector::select<bool, Details::NUnion::EI_EQUAL2, TNOP>(a_value.type, cd);
     }
   #endif // #ifdef FCF_UNION_IMPLEMENTATION
@@ -3753,11 +3823,7 @@ namespace fcf {
   #ifdef FCF_UNION_IMPLEMENTATION
   template <typename Ty>
   bool Union::lessStr(const Ty& a_value) const {
-    struct CallData {
-      const UnionValue& left;
-      const Ty&         right;
-    };
-    CallData cd = {value, a_value};
+    Details::NUnion::LessCallData<Ty> cd = {value, a_value};
     return Details::NUnion::Selector::select<bool, Details::NUnion::EI_LESS, TNOP>(type, cd);
   }
   #endif // #ifdef FCF_UNION_IMPLEMENTATION
