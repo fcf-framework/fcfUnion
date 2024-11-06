@@ -538,7 +538,7 @@ namespace fcf {
                 _n1 = -1;
                 return;
               }
-             char c;
+              char c = 0;
               while(!_resolver.end()) {
                 _next();
                 if (_resolver.end()){
@@ -1149,7 +1149,7 @@ namespace fcf {
           double dd = 1;
           size_t m = 0;
           size_t i = 0;
-          unsigned char lc;
+          unsigned char lc = 0;
           while(!a_resolver.end()){
             unsigned char c = (unsigned char)a_resolver.read();
             if (c == '-'){
@@ -1255,7 +1255,7 @@ namespace fcf {
             return std::string();
           }
           size_t sc = 0;
-          unsigned char c;
+          unsigned char c = 0;
           while(!a_resolver.end()) {
             c = a_resolver.read();
             if (sc && sc % 2) {
@@ -1338,7 +1338,7 @@ namespace fcf {
 
         template <typename TResolver>
         FCF_UNION_DECL_VISIBILITY_HIDDEN bool parseBool(TResolver& a_resolver, const char** a_dstErrorMessage) {
-          unsigned char c;
+          unsigned char c = 0;
           const char* pattern;
           bool result;
           while(!a_resolver.end()) {
@@ -1951,7 +1951,8 @@ namespace fcf {
         struct FCF_UNION_DECL_VISIBILITY_HIDDEN Executor<EI_CONST_GET, Ty, Ty>{
           template <typename TCallData>
           inline void operator()(TCallData& a_callData){
-            a_callData.destination = *(Ty*)(void*)&a_callData.value.vint;
+            void* ptr = (void*)&a_callData.value.vint;
+            a_callData.destination = *(Ty*)ptr;
           }
         };
 
@@ -1987,7 +1988,8 @@ namespace fcf {
               Details::NUnion::Executor<fcf::Details::NUnion::EI_SET, Ty, TNOP>()(esa);
               a_callData.type = type;
             }
-            return *(Ty*)(void*)&a_callData.value.vint;
+            void* ptr = (void*)&a_callData.value.vint;
+            return *(Ty*)ptr;
           }
         };
 
@@ -2016,7 +2018,8 @@ namespace fcf {
           template <typename TData>
           inline void operator()(TData& a_data){
             a_data.dstType = (UnionType)Details::NUnion::TypeHelper<Ty>::type_index;
-            *((Ty*)(void*)&a_data.dstValue.vint) = a_data.value;
+            void* ptr = &a_data.dstValue.vint;
+            *(Ty*)ptr = a_data.value;
           }
         };
 
@@ -2120,7 +2123,8 @@ namespace fcf {
         struct FCF_UNION_DECL_VISIBILITY_HIDDEN Executor<EI_COPY, Ty, TNOP>{
           template <typename TCallData>
           inline void operator()(TCallData a_callData){
-            Ty& value = *((Ty*)(void*)&a_callData.source.vint);
+            void* ptr = (void*)&a_callData.source.vint;
+            Ty& value = *(Ty*)ptr;
             new ((void*)&a_callData.destination.vint)Ty(value);
           }
         };
@@ -2232,11 +2236,11 @@ namespace fcf {
           }
           unsigned char c = (unsigned char)a_resolver.read();
           if (c == '-' || (c >= (unsigned char)'0' && c <= (unsigned char)'9')){
-            bool               minus;
-            bool               point;
-            double             dvalue;
-            long long          ivalue;
-            unsigned long long uvalue;
+            bool               minus = false;
+            bool               point = false;
+            double             dvalue = 0;
+            long long          ivalue = 0;
+            unsigned long long uvalue = 0;
             parseNumber(a_resolver, false, &minus, &point, &dvalue, &ivalue, &uvalue, a_dstErrorMessage);
             if (point) {
               a_union.set(dvalue);
@@ -2511,11 +2515,11 @@ namespace fcf {
             a_key.set(parseInnerString(a_resolver, a_dstErrorMessage));
             return true;
           } else if (c == '-' || (c >= (unsigned char)'0' && c < (unsigned char)'9')){
-            bool         minus;
-            bool         point;
-            double       dvalue;
-            int          ivalue;
-            unsigned int uvalue;
+            bool         minus = false;
+            bool         point = false;
+            double       dvalue = 0;
+            int          ivalue = 0;
+            unsigned int uvalue = 0;
             parseNumber(a_resolver, false, &minus, &point, &dvalue, &ivalue, &uvalue, a_dstErrorMessage);
             if (point) {
               a_key.set(dvalue);
@@ -2651,6 +2655,8 @@ namespace fcf {
 
         template <typename TLeft, typename  TRight>
         bool Cmp::lessStr(TLeft& a_left, TRight a_right) {
+          void* leftPtr = &a_left;
+          void* rightPtr = &a_right;
           typedef typename TypeHelper<TLeft>::far_type  left_far_type;
           typedef typename TypeHelper<TRight>::far_type right_far_type;
           int leftTypeIndex  = TypeHelper<left_far_type>::type_index;
@@ -2702,22 +2708,22 @@ namespace fcf {
           } else if (rightTypeIndex == UT_NULL) {
             return false;
           }
-          if (leftTypeIndex == UT_BOOL && !(*(bool*)&a_left)) {
-            if (rightTypeIndex == UT_BOOL&& !(*(bool*)&a_right)) {
+          if (leftTypeIndex == UT_BOOL && !(*(bool*)leftPtr)) {
+            if (rightTypeIndex == UT_BOOL&& !(*(bool*)rightPtr)) {
               return false;
             } else {
               return true;
             }
-          } else if (rightTypeIndex == UT_BOOL && !(*(bool*)&a_right)) {
+          } else if (rightTypeIndex == UT_BOOL && !(*(bool*)rightPtr)) {
             return false;
           }
-          if (leftTypeIndex == UT_BOOL && (*(bool*)&a_left)) {
-            if (rightTypeIndex == UT_BOOL&& (*(bool*)&a_right)) {
+          if (leftTypeIndex == UT_BOOL && (*(bool*)leftPtr)) {
+            if (rightTypeIndex == UT_BOOL&& (*(bool*)rightPtr)) {
               return false;
             } else {
               return true;
             }
-          } else if (rightTypeIndex == UT_BOOL && (*(bool*)&a_right)) {
+          } else if (rightTypeIndex == UT_BOOL && (*(bool*)rightPtr)) {
             return false;
           }
           bool isLeftNum = leftTypeIndex >= FIRST_NUMBER_TYPE && leftTypeIndex <= LAST_NUMBER_TYPE;
@@ -2845,8 +2851,10 @@ namespace fcf {
                 return false;
               }
             } else if (a_deep && leftTypeIndex == UT_VECTOR && rightTypeIndex == UT_VECTOR) {
-              const UnionVector& left = *(const UnionVector*)&a_left;
-              const UnionVector& right = *(const UnionVector*)&a_right;
+              void* leftPtr = &a_left;
+              const UnionVector& left = *(const UnionVector*)leftPtr;
+              void* rightPtr = &a_right;
+              const UnionVector& right = *(const UnionVector*)rightPtr;
               if (left.size() != right.size()){
                 return false;
               }
@@ -2857,8 +2865,10 @@ namespace fcf {
               }
               return true;
             } else if (a_deep && leftTypeIndex == UT_MAP && rightTypeIndex == UT_MAP) {
-              const UnionMap& left = *(const UnionMap*)&a_left;
-              const UnionMap& right = *(const UnionMap*)&a_right;
+              void* leftPtr = &a_left;
+              const UnionMap& left = *(const UnionMap*)leftPtr;
+              void* rightPtr = &a_right;
+              const UnionMap& right = *(const UnionMap*)rightPtr;
               if (left.size() != right.size()){
                 return false;
               }
