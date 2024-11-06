@@ -417,8 +417,8 @@ namespace fcf {
           ConstResolver(const value_type& a_ref, bool a_enableLineCounter = false)
             : _ref(a_ref) {
           }
-          inline const value_type& operator()(){
-            return _ref;
+          inline value_type& operator()(){
+            return (value_type&)_ref;
           }
 
           size_t line() {
@@ -435,7 +435,7 @@ namespace fcf {
         template <typename TString>
         struct FCF_UNION_DECL_VISIBILITY_HIDDEN SimpleConstResolver {
           typedef char item_type;
-          typedef std::string value_type;
+          typedef TString value_type;
 
           template <typename Ty>
           SimpleConstResolver(Ty& a_ref, bool a_enableLineCounter = false)
@@ -443,7 +443,7 @@ namespace fcf {
             , _index(0){
           }
 
-          inline const std::string& operator()(){
+          inline TString& operator()(){
             return _ref;
           }
 
@@ -522,7 +522,7 @@ namespace fcf {
                : _resolver((TRef&)a_ref), _q(0), _n1(-1), _n2(-1), _nb1(-1), _s(0), _l(a_enableLineCounter ? 1 : SIZE_MAX), _c(a_enableLineCounter ? 1: SIZE_MAX) {
             }
 
-            inline const value_type& operator()(){
+            inline value_type& operator()(){
               return _resolver.operator()();
             }
 
@@ -662,6 +662,7 @@ namespace fcf {
           typedef ConstUncommentResolver< SimpleConstResolver<const char*> > base_type;
           using ConstUncommentResolver< SimpleConstResolver<const char*> >::ConstUncommentResolver;
         };
+
 
         template <>
         struct FCF_UNION_DECL_VISIBILITY_HIDDEN ConstResolver< std::basic_istream<char> > : public ConstUncommentResolver< SimpleConstResolver< std::basic_istream<char> > >{
@@ -852,6 +853,61 @@ namespace fcf {
 
         template <>
         struct FCF_UNION_DECL_VISIBILITY_HIDDEN Converter<long long, UnionMap, TNOP>{
+          template <typename TResolver, typename TReceiver>
+          inline void operator()(TResolver& a_resolver, TReceiver& a_receiver, bool a_inner, const char** a_dstErrorMessage) {
+            FCF_THROW_OR_RESULT_ERROR(a_dstErrorMessage, "Incorrect map value", a_resolver, false);
+          }
+        };
+
+
+        ///////////////////////////////////////
+        // Convertion from long int
+        ///////////////////////////////////////
+        template <>
+        struct FCF_UNION_DECL_VISIBILITY_HIDDEN Converter<long int, std::string, TNOP>{
+          template <typename TResolver, typename TReceiver>
+          inline void operator()(TResolver& a_resolver, TReceiver& a_receiver, bool a_inner, const char** a_dstErrorMessage) {
+            return  a_receiver(std::to_string(a_resolver()));
+          }
+        };
+
+        template <>
+        struct FCF_UNION_DECL_VISIBILITY_HIDDEN Converter<long int, UnionVector, TNOP>{
+          template <typename TResolver, typename TReceiver>
+          inline void operator()(TResolver& a_resolver, TReceiver& a_receiver, bool a_inner, const char** a_dstErrorMessage) {
+            FCF_THROW_OR_RESULT_ERROR(a_dstErrorMessage, "Incorrect vector value", a_resolver, false);
+          }
+        };
+
+        template <>
+        struct FCF_UNION_DECL_VISIBILITY_HIDDEN Converter<long int, UnionMap, TNOP>{
+          template <typename TResolver, typename TReceiver>
+          inline void operator()(TResolver& a_resolver, TReceiver& a_receiver, bool a_inner, const char** a_dstErrorMessage) {
+            FCF_THROW_OR_RESULT_ERROR(a_dstErrorMessage, "Incorrect map value", a_resolver, false);
+          }
+        };
+
+        ///////////////////////////////////////
+        // Convertion from unsigned long int
+        ///////////////////////////////////////
+        template <>
+        struct FCF_UNION_DECL_VISIBILITY_HIDDEN Converter<unsigned long int, std::string, TNOP>{
+          template <typename TResolver, typename TReceiver>
+          inline void operator()(TResolver& a_resolver, TReceiver& a_receiver, bool a_inner, const char** a_dstErrorMessage) {
+            return  a_receiver(std::to_string(a_resolver()));
+          }
+        };
+
+        template <>
+        struct FCF_UNION_DECL_VISIBILITY_HIDDEN Converter<unsigned long int, UnionVector, TNOP>{
+          template <typename TResolver, typename TReceiver>
+          inline void operator()(TResolver& a_resolver, TReceiver& a_receiver, bool a_inner, const char** a_dstErrorMessage) {
+            FCF_THROW_OR_RESULT_ERROR(a_dstErrorMessage, "Incorrect vector value", a_resolver, false);
+          }
+        };
+
+        template <>
+        struct FCF_UNION_DECL_VISIBILITY_HIDDEN Converter<unsigned long int, UnionMap, TNOP>{
           template <typename TResolver, typename TReceiver>
           inline void operator()(TResolver& a_resolver, TReceiver& a_receiver, bool a_inner, const char** a_dstErrorMessage) {
             FCF_THROW_OR_RESULT_ERROR(a_dstErrorMessage, "Incorrect map value", a_resolver, false);
@@ -2669,10 +2725,10 @@ namespace fcf {
             } else if (leftCStr && !rightCStr){
               UnionStringifyOptions so;
               std::string rstr;
-              fcf::Details::NConvert::ConstResolver< right_far_type > r{a_right};
+              fcf::Details::NConvert::ConstResolver< TRight > r{a_right};
               fcf::Details::NConvert::Receiver<std::string, UnionStringifyOptions> rc{rstr, so};
               const char* error = 0;
-              fcf::Details::NConvert::Converter<right_far_type, std::string, TNOP>()(r, rc, false, &error);
+              fcf::Details::NConvert::Converter<TRight, std::string, TNOP>()(r, rc, false, &error);
               if (error) {
                 return false;
               }
@@ -2680,10 +2736,10 @@ namespace fcf {
             } else {
               UnionStringifyOptions so;
               std::string lstr;
-              fcf::Details::NConvert::ConstResolver< left_far_type > r{a_left};
+              fcf::Details::NConvert::ConstResolver< TLeft > r{a_left};
               fcf::Details::NConvert::Receiver<std::string, UnionStringifyOptions> rc{lstr, so};
               const char* error = 0;
-              fcf::Details::NConvert::Converter<left_far_type, std::string, TNOP>()(r, rc, false, &error);
+              fcf::Details::NConvert::Converter<TLeft, std::string, TNOP>()(r, rc, false, &error);
               if (error) {
                 return true;
               }
