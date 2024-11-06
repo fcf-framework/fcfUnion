@@ -333,7 +333,7 @@ The class object contains a value that has a type - one of the enum [fcf::UnionT
 * `template <typename Ty> bool is() const` - Returns `true` if `Ty` type is equal to the type of the stored object value
 * `bool is(fcf::UnionType a_type) const` - Returns `true` if type index `a_type` is equal to the type of the stored object value
 *  `template <typename Ty> bool isCompatible(bool a_stringifyMode = false) const` - Returns `true` if the stored value can be represented as type `Ty`. If the `a_stringifyMode` argument is `true`, the possibility of converting from string type to type `Ty` is also checked.
-*  `bool isCompatible(fcf::UnionType a_type, bool a_stringifyMode = false) const` - Returns true if the stored value can be represented as type `a_type`. If the `a_stringifyMode` argument is true, the possibility of converting from string type to type `a_type` is also checked.
+*  `bool isCompatible(fcf::UnionType a_type, bool a_stringifyMode = false) const` - Returns true if the stored value can be represented as type `a_type`. If the `a_stringifyMode` argument is `true`, the possibility of converting from string type to type `a_type` is also checked.
 * `template <typename Ty> explicit operator Ty() const` - Returns the stored value in the Ty type representation. If the stored value cannot be converted, an `fcf::UnionException` exception is thrown.
 *  `template <typename Ty> Ty get() const` - Returns the stored value in the Ty type representation. If the stored value cannot be converted, an `fcf::UnionException` exception is thrown.
 *  `template <typename Ty> fcf::Details::NUnion::TypeHelper<Ty>::far_type& ref()` - Returns a reference to the stored value. If the stored value differs from the requested type, the stored data type is converted to the closest available type and a reference to the stored value is returned. If the conversion process fails, the object is initialized to an empty value.
@@ -343,7 +343,7 @@ The class object contains a value that has a type - one of the enum [fcf::UnionT
 *  `void set(fcf::UnionType a_type)` - Sets a new empty value with the given type
 *  `template <typename Ty> fcf::Union& operator=(const Ty& a_value)` - Sets a new value.
 *  `fcf::Union& operator=(const fcf::Union& a_union)` - Sets a new value.
-*  `template <typename Ty> bool equal(const Ty& a_value, bool a_strict, bool a_deep) const` - Returns `true` if the stored value is equal to `a_value`. If `a_strict` is `true`, then a strict comparison is performed (types must match). If the `a_deep` parameter is true, then an element-wise comparison is performed for `fcf::UnionVector` and `fcf::UnionMap`.
+*  `template <typename Ty> bool equal(const Ty& a_value, bool a_strict, bool a_deep) const` - Returns `true` if the stored value is equal to `a_value`. If `a_strict` is `true`, then a strict comparison is performed (types must match). If the `a_deep` parameter is `true`, then an element-wise comparison is performed for `fcf::UnionVector` and `fcf::UnionMap`.
 * `template <typename Ty> bool operator==(const Ty& a_value) const` - Performs a non-strict and non-deep equality comparison. Returns `true` if the stored value is equal to `a_value`.
 * `template <typename Ty> bool operator!=(const Ty& a_value) const` - Performs a non-strict and non-deep non-equality comparison. Returns `true` if the stored value is not equal to `a_value`.
 *
