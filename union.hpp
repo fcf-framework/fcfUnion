@@ -1937,6 +1937,25 @@ namespace fcf {
           const char**      error;
         };
 
+        template <typename TRight>
+        struct LessCallData {
+          const UnionValue& left;
+          const TRight&     right;
+        };
+
+        template <typename TRight>
+        struct EqualCallData{
+          const UnionValue&  left;
+          const TRight&      right;
+          bool               strict;
+          bool               deep;
+        };
+
+        struct CopyCallData{
+          const UnionValue& source;
+          UnionValue&       destination;
+        };
+
         template <typename TIterator>
         FCF_UNION_DECL_VISIBILITY_HIDDEN bool orderLess(const TIterator& a_left, const TIterator& a_right){
           if (a_left->second.order && a_right->second.order) {
@@ -2137,11 +2156,7 @@ namespace fcf {
           template <typename TData>
           bool operator()(TData& a_data){
             Ty& right = *(Ty*)(void*)&a_data.right;
-            struct CallData{
-              const UnionValue&  left;
-              Ty&                right;
-            };
-            CallData cd{a_data.left, right};
+            Details::NUnion::LessCallData<Ty> cd{a_data.left, right};
             return Details::NUnion::Selector::select<bool, Details::NUnion::EI_LESS, TNOP>(a_data.leftType, cd);
           }
         };
@@ -2151,13 +2166,7 @@ namespace fcf {
           template <typename TData>
           bool operator()(TData& a_data){
             Ty& right = *(Ty*)(void*)&a_data.right;
-            struct CallData{
-              const UnionValue&  left;
-              Ty&                right;
-              bool               strict;
-              bool               deep;
-            };
-            CallData cd{a_data.left, right, a_data.strict, a_data.deep};
+            EqualCallData<Ty> cd{a_data.left, right, a_data.strict, a_data.deep};
             return Details::NUnion::Selector::select<bool, Details::NUnion::EI_EQUAL, TNOP>(a_data.leftType, cd);
           }
         };
@@ -3217,11 +3226,7 @@ namespace fcf {
       : type(UT_UNDEFINED), orderc(a_union.orderc), order(a_union.order)
     {
       type = a_union.type;
-      struct CallData{
-        const UnionValue& source;
-        UnionValue&       destination;
-      };
-      CallData cd{a_union.value, value};
+      Details::NUnion::CopyCallData cd{a_union.value, value};
       Details::NUnion::Selector::select<void, Details::NUnion::EI_COPY, TNOP>(type, cd);
     }
   #endif // #ifdef FCF_UNION_IMPLEMENTATION
@@ -3753,11 +3758,7 @@ namespace fcf {
     void Union::set(const Union& a_union){
       Details::NUnion::Selector::select<void, Details::NUnion::EI_DESTROY, TNOP>(type, value);
       type = UT_UNDEFINED;
-      struct CallData{
-        const UnionValue& source;
-        UnionValue&       destination;
-      };
-      CallData cd{a_union.value, value};
+      Details::NUnion::CopyCallData cd{a_union.value, value};
       Details::NUnion::Selector::select<void, Details::NUnion::EI_COPY, TNOP>(a_union.type, cd);
       if (!order) {
         order = a_union.order;
@@ -3785,13 +3786,7 @@ namespace fcf {
   #ifdef FCF_UNION_IMPLEMENTATION
     template <typename Ty>
     bool Union::equal(const Ty& a_value, bool a_strict, bool a_deep) const {
-      struct CallData {
-        bool              strict;
-        bool              deep;
-        const UnionValue& left;
-        const Ty&         right;
-      };
-      CallData cd = {a_strict, a_deep, value, a_value};
+      Details::NUnion::EqualCallData<Ty> cd = {value, a_value, a_strict, a_deep};
       return Details::NUnion::Selector::select<bool, Details::NUnion::EI_EQUAL, TNOP>(type, cd);
     }
   #endif // #ifdef FCF_UNION_IMPLEMENTATION
@@ -3828,11 +3823,7 @@ namespace fcf {
   #ifdef FCF_UNION_IMPLEMENTATION
   template <typename Ty>
   bool Union::lessStr(const Ty& a_value) const {
-    struct CallData {
-      const UnionValue& left;
-      const Ty&         right;
-    };
-    CallData cd = {value, a_value};
+    Details::NUnion::LessCallData<Ty> cd = {value, a_value};
     return Details::NUnion::Selector::select<bool, Details::NUnion::EI_LESS, TNOP>(type, cd);
   }
   #endif // #ifdef FCF_UNION_IMPLEMENTATION
