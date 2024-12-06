@@ -1,6 +1,6 @@
 #ifndef ___FCF__UNION__UNION_HPP___
 #define ___FCF__UNION__UNION_HPP___
-
+#pragma warning(disable: 5045)
 #include <stdexcept>
 #include <algorithm>
 #include <memory>
