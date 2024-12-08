@@ -258,8 +258,8 @@ namespace fcf {
       basic_iterator(TVectorIterator a_iterator, const UnionVector* a_owner);
       basic_iterator(TMapIterator a_iterator, const UnionMap* a_owner);
       TPointer operator->();
-      TRef& operator*();
-      TRef& value();
+      inline TRef operator*() { return *(operator->()); }
+      inline TRef value() { return *(operator->()); }
     };
 
     typedef Union& TRef;
@@ -2997,8 +2997,6 @@ namespace fcf {
   // Union::base_iterator impementation
   ////////////////////////!//////////////////////
 
-  FCF_UNION_DECL_TEMPLATE_EXTERN template struct Union::basic_iterator<Union*, Union&, UnionMap::iterator, UnionVector::iterator>;
-  FCF_UNION_DECL_TEMPLATE_EXTERN template struct Union::basic_iterator<const Union*, const Union&, UnionMap::const_iterator, UnionVector::const_iterator>;
 
   #ifdef FCF_UNION_IMPLEMENTATION
     Union::base_iterator::base_iterator()
@@ -3012,6 +3010,21 @@ namespace fcf {
       _vitype = IT_VECTOR;
       _owner = (void*)a_owner;
       new ((void*)&_viiterator.vivector[0])TVectorIterator(a_iterator);
+    }
+
+    template <typename TPointer, typename TRef, typename TMapIterator, typename TVectorIterator>
+    TPointer Union::basic_iterator<TPointer, TRef, TMapIterator, TVectorIterator>::operator-> () {
+      if (_vitype == IT_VECTOR) {
+        return ((TVectorIterator*)(void*)&_viiterator.vivector[0])->operator->();
+      } else if (_vitype == IT_MAP) {
+        return &(((TMapIterator*)(void*)&_viiterator.vimap[0])->operator->()->second);
+      } else if (_vitype == IT_OMAP) {
+        oiterator_type& oit = *(oiterator_type*)&_viiterator.voiterators[0];
+        UnionMap::iterator mapIt = *oit.iterator;
+        return &mapIt->second;
+      } else {
+        return 0;
+      }
     }
 
     Union::base_iterator::base_iterator(oiterators_type a_iterators, std::vector< UnionMap::iterator >::iterator a_iterator, const UnionMap* a_owner)
@@ -3118,32 +3131,6 @@ namespace fcf {
       operator++();
       return it;
     }
-
-    template <typename TPointer, typename TRef, typename TMapIterator, typename TVectorIterator>
-    TPointer Union::basic_iterator<TPointer, TRef, TMapIterator, TVectorIterator>::operator->() {
-      if (_vitype == IT_VECTOR) {
-        return ((TVectorIterator*)(void*)&_viiterator.vivector[0])->operator->();
-      } else if (_vitype == IT_MAP) {
-        return &(((TMapIterator*)(void*)&_viiterator.vimap[0])->operator->()->second);
-      } else if (_vitype == IT_OMAP) {
-        oiterator_type& oit = *(oiterator_type*)&_viiterator.voiterators[0];
-        UnionMap::iterator mapIt = *oit.iterator;
-        return &mapIt->second;
-      } else {
-        return 0;
-      }
-    }
-
-    template <typename TPointer, typename TRef, typename TMapIterator, typename TVectorIterator>
-    TRef& Union::basic_iterator<TPointer, TRef, TMapIterator, TVectorIterator>::operator*() {
-      return *operator->();
-    }
-
-    template <typename TPointer, typename TRef, typename TMapIterator, typename TVectorIterator>
-    TRef& Union::basic_iterator<TPointer, TRef, TMapIterator, TVectorIterator>::value() {
-      return *operator->();
-    }
-
     Union Union::base_iterator::key() const {
       Union u;
       if (_vitype == IT_VECTOR) {
@@ -3184,6 +3171,9 @@ namespace fcf {
       return true;
     }
   #endif // #ifdef FCF_UNION_IMPLEMENTATION
+
+  FCF_UNION_DECL_TEMPLATE_EXTERN template struct Union::basic_iterator<Union::TPointer, Union::TRef, UnionMap::iterator, UnionVector::iterator>;
+  FCF_UNION_DECL_TEMPLATE_EXTERN template struct Union::basic_iterator<const Union*, const Union&, UnionMap::const_iterator, UnionVector::const_iterator>;
 
   //////////////////////////////////////////////
   // UnionException impementation
