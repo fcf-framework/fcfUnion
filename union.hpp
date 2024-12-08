@@ -1,6 +1,9 @@
 #ifndef ___FCF__UNION__UNION_HPP___
 #define ___FCF__UNION__UNION_HPP___
+
+#pragma warning(push)
 #pragma warning(disable: 5045)
+
 #include <stdexcept>
 #include <algorithm>
 #include <memory>
@@ -3852,5 +3855,7 @@ namespace fcf {
   #endif // #ifdef FCF_UNION_IMPLEMENTATION
 
 }
+
+#pragma warning(pop)
 
 #endif // #ifndef ___FCF__UNION__UNION_HPP___
